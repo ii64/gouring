@@ -26,6 +26,15 @@ func (r *Ring) Close() (err error) {
 	return
 }
 
+func (r *Ring) Register(opcode UringRegisterOpcode, arg uintptr, nrArg uint) (ret int, err error) {
+	ret, err = register(r, opcode, arg, nrArg)
+	if err != nil {
+		err = errors.Wrap(err, "register")
+		return
+	}
+	return
+}
+
 func (r *Ring) Enter(toSubmit, minComplete uint, flags UringEnterFlag, sig *Sigset_t) (ret int, err error) {
 	ret, err = enter(r, toSubmit, minComplete, flags, sig)
 	if err != nil {

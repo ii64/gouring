@@ -121,7 +121,11 @@ func unsetup(r *Ring) (err error) {
 	return
 }
 
-func register(r *Ring) (err error) {
+func register(r *Ring, opcode UringRegisterOpcode, arg uintptr, nrArg uint) (ret int, err error) {
+	if ret, err = io_uring_register(r.fd, opcode, arg, nrArg); err != nil {
+		err = errors.Wrap(err, "io_uring_register")
+		return
+	}
 	return
 }
 

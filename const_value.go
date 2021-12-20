@@ -152,7 +152,7 @@ const (
 
 //
 
-type UringRegisterOpcode = uint32
+type UringRegisterOpcode = uint
 
 const (
 	IORING_REGISTER_BUFFERS UringRegisterOpcode = iota

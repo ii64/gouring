@@ -86,7 +86,6 @@ func setup(r *Ring, entries uint, parmas *IOUringParams) (ringFd int, err error)
 		return
 	}
 	sq.sqes = sqeArray(r.sqesPtr)
-	sq.sqesSz = uintptr(p.SQEntries) // cache
 
 	//
 
@@ -95,7 +94,6 @@ func setup(r *Ring, entries uint, parmas *IOUringParams) (ringFd int, err error)
 	cq.ringMask = cqRingPtr + uintptr(p.CQOff.RingMask)
 	cq.ringEntries = cqRingPtr + uintptr(p.CQOff.RingEntries)
 	cq.cqes = cqeArray(cqRingPtr + uintptr(p.CQOff.CQEs))
-	cq.cqesSz = uintptr(p.CQEntries) // cache
 
 	return
 }
@@ -130,7 +128,7 @@ func register(r *Ring, opcode UringRegisterOpcode, arg uintptr, nrArg uint) (ret
 }
 
 func enter(r *Ring, toSubmit, minComplete uint, flags UringEnterFlag, sig *Sigset_t) (ret int, err error) {
-	if ret, err = io_uring_enter(r.fd, toSubmit, minComplete, flags, sig); err != nil {
+	if ret, err = io_uring_enter(r.fd, toSubmit, minComplete, uint(flags), sig); err != nil {
 		err = errors.Wrap(err, "io_uring_enter")
 		return
 	}

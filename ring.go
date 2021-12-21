@@ -1,6 +1,9 @@
 package gouring
 
-import "unsafe"
+import (
+	"sync/atomic"
+	"unsafe"
+)
 
 type Ring struct {
 	fd     int
@@ -24,13 +27,10 @@ type SQRing struct {
 	flags       uintptr
 	array       uint32Array
 	sqes        sqeArray
-
-	// cache
-	sqesSz uintptr
 }
 
-func (sq SQRing) Get(idx uint32) *SQEvent {
-	if uintptr(idx) >= sq.sqesSz {
+func (sq SQRing) Get(idx uint32) *SQEntry {
+	if uintptr(idx) >= uintptr(*sq.RingEntries()) {
 		return nil
 	}
 	return sq.sqes.Get(uintptr(idx))
@@ -57,6 +57,13 @@ func (sq SQRing) Event() sqeArray {
 	return sq.sqes
 }
 
+func (sq SQRing) IsCQOverflow() bool {
+	return atomic.LoadUint32(sq.Flags())&IORING_SQ_CQ_OVERFLOW > 0
+}
+func (sq SQRing) IsNeedWakeup() bool {
+	return atomic.LoadUint32(sq.Flags())&IORING_SQ_NEED_WAKEUP > 0
+}
+
 //
 type uint32Array uintptr
 
@@ -65,16 +72,16 @@ func (a uint32Array) Get(idx uint32) *uint32 {
 }
 
 func (a uint32Array) Set(idx uint32, v uint32) {
-	*a.Get(idx) = v
+	atomic.StoreUint32(a.Get(idx), v)
 }
 
 type sqeArray uintptr
 
-func (sa sqeArray) Get(idx uintptr) *SQEvent {
-	return (*SQEvent)(unsafe.Pointer(uintptr(sa) + idx*_sz_sqe))
+func (sa sqeArray) Get(idx uintptr) *SQEntry {
+	return (*SQEntry)(unsafe.Pointer(uintptr(sa) + idx*_sz_sqe))
 }
 
-func (sa sqeArray) Set(idx uintptr, v SQEvent) {
+func (sa sqeArray) Set(idx uintptr, v SQEntry) {
 	*sa.Get(idx) = v
 }
 
@@ -87,13 +94,10 @@ type CQRing struct {
 	ringMask    uintptr
 	ringEntries uintptr
 	cqes        cqeArray
-
-	// cache
-	cqesSz uintptr
 }
 
-func (cq CQRing) Get(idx uint32) *CQEvent {
-	if uintptr(idx) >= cq.cqesSz { // avoid lookup overflow
+func (cq CQRing) Get(idx uint32) *CQEntry {
+	if uintptr(idx) >= uintptr(*cq.RingEntries()) { // avoid lookup overflow
 		return nil
 	}
 	return cq.cqes.Get(uintptr(idx))
@@ -118,10 +122,10 @@ func (cq CQRing) Event() cqeArray {
 
 type cqeArray uintptr
 
-func (ca cqeArray) Get(idx uintptr) *CQEvent {
-	return (*CQEvent)(unsafe.Pointer(uintptr(ca) + idx*_sz_cqe))
+func (ca cqeArray) Get(idx uintptr) *CQEntry {
+	return (*CQEntry)(unsafe.Pointer(uintptr(ca) + idx*_sz_cqe))
 }
 
-func (ca cqeArray) Set(idx uintptr, v CQEvent) {
+func (ca cqeArray) Set(idx uintptr, v CQEntry) {
 	*ca.Get(idx) = v
 }

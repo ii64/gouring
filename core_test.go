@@ -4,7 +4,6 @@ import (
 	"strings"
 	"syscall"
 	"testing"
-	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -34,17 +33,17 @@ func TestCore(t *testing.T) {
 		sqe.Opcode = IORING_OP_WRITE
 		sqe.Fd = int32(syscall.Stdout)
 		sqe.UserData = uint64(i)
-		*sqe.Addr() = (uint64)(uintptr(unsafe.Pointer(&m[0])))
+		sqe.Len = uint32(len(m))
+		sqe.SetOffset(0)
+		sqe.SetAddr(&m[0])
 
 		*sq.Array().Get(sqIdx) = *sq.Head() & *sq.RingMask()
 		*sq.Tail()++
 
-		t.Logf("Queued %d: %+#v", i, sqe)
+		done, err := ring.Enter(1, 1, IORING_ENTER_GETEVENTS, nil)
+		assert.NoError(t, err, "ring enter")
+		t.Logf("done %d", done)
 	}
-
-	done, err := ring.Enter(uint(n), uint(n), IORING_ENTER_GETEVENTS, nil)
-	assert.NoError(t, err, "ring enter")
-	t.Logf("done %d", done)
 
 	// get cq
 	cq := ring.CQ()

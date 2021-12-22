@@ -5,7 +5,6 @@ package queue
 
 import (
 	"errors"
-	"fmt"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -184,7 +183,7 @@ func (q *Queue) Run(f func(cqe *gouring.CQEntry)) {
 	for q.precheck() == nil {
 		cqe, err := q.getCQEvent(true)
 		if cqe == nil || err != nil {
-			fmt.Printf("run error: %+#v\n", err)
+			// fmt.Printf("run error: %+#v\n", err)
 			if err == ErrQueueClosed {
 				return
 			}

@@ -1,7 +1,6 @@
 package gouring
 
 import (
-	"fmt"
 	"syscall"
 	"unsafe"
 
@@ -95,8 +94,6 @@ func setup(r *Ring, entries uint, parmas *IOUringParams) (ringFd int, err error)
 	cq.ringMask = cqRingPtr + uintptr(p.CQOff.RingMask)
 	cq.ringEntries = cqRingPtr + uintptr(p.CQOff.RingEntries)
 	cq.cqes = cqeArray(cqRingPtr + uintptr(p.CQOff.CQEs))
-
-	fmt.Printf("sq entries %d cq entries %d\n", *sq.RingEntries(), *cq.RingEntries())
 
 	return
 }

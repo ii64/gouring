@@ -1,6 +1,8 @@
 package gouring
 
 import (
+	"syscall"
+
 	"github.com/pkg/errors"
 )
 
@@ -19,6 +21,11 @@ func New(entries uint, params *IOUringParams) (*Ring, error) {
 
 func (r *Ring) Close() (err error) {
 	if err = unsetup(r); err != nil {
+		err = errors.Wrap(err, "close")
+		return
+	}
+
+	if err = syscall.Close(r.fd); err != nil {
 		err = errors.Wrap(err, "close")
 		return
 	}

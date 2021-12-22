@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 	"syscall"
@@ -28,10 +29,10 @@ func TestQueue(t *testing.T) {
 	}()
 
 	mkdata := func(i int) []byte {
-		return []byte("queue pls" + strings.Repeat("!", i) + "\n")
+		return []byte("queue pls" + strings.Repeat("!", i) + fmt.Sprintf("%d", i) + "\n")
 	}
 
-	N := 5
+	N := 64 + 64
 	var wg sync.WaitGroup
 	btests := [][]byte{}
 	for i := 0; i < N; i++ {
@@ -45,11 +46,15 @@ func TestQueue(t *testing.T) {
 		for i, b := range btests {
 			sqe := q.GetSQEntry()
 			sqe.UserData = uint64(i)
+			// sqe.Flags = gouring.IOSQE_IO_DRAIN
 			write(sqe, syscall.Stdout, b)
+			if (i+1)%2 == 0 {
+				n, err := q.Submit()
+				assert.NoError(t, err, "queue submit")
+				assert.Equal(t, n, 2, "submit count mismatch")
+				fmt.Printf("submitted %d\n", n)
+			}
 		}
-		n, err := q.Submit()
-		assert.NoError(t, err, "queue submit")
-		assert.Equal(t, n, N, "submit count mismatch")
 	}()
 	go func() {
 		q.Run(func(cqe *gouring.CQEntry) {
@@ -57,9 +62,9 @@ func TestQueue(t *testing.T) {
 			assert.Condition(t, func() (success bool) {
 				return cqe.UserData < uint64(len(btests))
 			}, "userdata is set with the btest index")
-			assert.Condition(t, func() (success bool) {
+			assert.Conditionf(t, func() (success bool) {
 				return len(btests[cqe.UserData]) == int(cqe.Res)
-			}, "OP_WRITE result mismatch")
+			}, "OP_WRITE result mismatch: %+#v", cqe)
 		})
 	}()
 

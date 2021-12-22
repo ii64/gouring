@@ -1,6 +1,7 @@
 package gouring
 
 import (
+	"fmt"
 	"syscall"
 	"unsafe"
 
@@ -77,7 +78,7 @@ func setup(r *Ring, entries uint, parmas *IOUringParams) (ringFd int, err error)
 	sq.ringEntries = sqRingPtr + uintptr(p.SQOff.RingEntries)
 	sq.flags = sqRingPtr + uintptr(p.SQOff.Flags)
 	sq.array = uint32Array(sqRingPtr + uintptr(p.SQOff.Array))
-	r.sqesPtr, err = mmap(0, uintptr(p.SQEntries),
+	r.sqesPtr, err = mmap(0, uintptr(p.SQEntries*uint32(_sz_sqe)),
 		syscall.PROT_READ|syscall.PROT_WRITE,
 		syscall.MAP_SHARED|syscall.MAP_POPULATE,
 		ringFd, IORING_OFF_SQES)
@@ -94,6 +95,8 @@ func setup(r *Ring, entries uint, parmas *IOUringParams) (ringFd int, err error)
 	cq.ringMask = cqRingPtr + uintptr(p.CQOff.RingMask)
 	cq.ringEntries = cqRingPtr + uintptr(p.CQOff.RingEntries)
 	cq.cqes = cqeArray(cqRingPtr + uintptr(p.CQOff.CQEs))
+
+	fmt.Printf("sq entries %d cq entries %d\n", *sq.RingEntries(), *cq.RingEntries())
 
 	return
 }

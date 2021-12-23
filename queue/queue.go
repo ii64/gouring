@@ -146,7 +146,7 @@ func (q *Queue) cqAdvance(d uint32) {
 	}
 }
 
-func (q *Queue) getCQEvent(wait bool) (cqe *gouring.CQEntry, err error) {
+func (q *Queue) GetCQEvent(wait bool) (cqe *gouring.CQEntry, err error) {
 	if err = q.precheck(); err != nil {
 		return
 	}
@@ -181,7 +181,7 @@ func (q *Queue) getCQEvent(wait bool) (cqe *gouring.CQEntry, err error) {
 
 func (q *Queue) Run(f func(cqe *gouring.CQEntry)) {
 	for q.precheck() == nil {
-		cqe, err := q.getCQEvent(true)
+		cqe, err := q.GetCQEvent(true)
 		if cqe == nil || err != nil {
 			// fmt.Printf("run error: %+#v\n", err)
 			if err == ErrQueueClosed {

@@ -26,7 +26,9 @@ type Queue struct {
 	sqeTail uint32
 
 	sMx  sync.Mutex
-	cqMx sync.RWMutex // tbd...
+	cqMx sync.Mutex
+
+	err error
 
 	clq uint32
 }
@@ -49,12 +51,12 @@ func (q *Queue) Close() error {
 	atomic.StoreUint32(&q.clq, 1)
 	return nil
 }
-func (q *Queue) precheck() (err error) {
+func (q *Queue) precheck() error {
 	if clq := atomic.LoadUint32(&q.clq); clq == 1 {
-		err = ErrQueueClosed
-		return
+		q.err = ErrQueueClosed
+		return q.err
 	}
-	return
+	return nil
 }
 
 //
@@ -142,11 +144,13 @@ func (q *Queue) cqPeek() (cqe *gouring.CQEntry) {
 
 func (q *Queue) cqAdvance(d uint32) {
 	if d != 0 {
-		atomic.AddUint32(q.cq.Head(), d)
+		atomic.AddUint32(q.cq.Head(), d) // mark readed
 	}
 }
 
 func (q *Queue) GetCQEvent(wait bool) (cqe *gouring.CQEntry, err error) {
+	q.cqMx.Lock()
+	defer q.cqMx.Unlock()
 	if err = q.precheck(); err != nil {
 		return
 	}
@@ -179,11 +183,15 @@ func (q *Queue) GetCQEvent(wait bool) (cqe *gouring.CQEntry, err error) {
 	}
 }
 
+func (q *Queue) Err() error {
+	return q.err
+}
+
 func (q *Queue) Run(f func(cqe *gouring.CQEntry)) {
 	for q.precheck() == nil {
 		cqe, err := q.GetCQEvent(true)
 		if cqe == nil || err != nil {
-			// fmt.Printf("run error: %+#v\n", err)
+			q.err = err
 			if err == ErrQueueClosed {
 				return
 			}

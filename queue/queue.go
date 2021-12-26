@@ -6,7 +6,6 @@ package queue
 import (
 	"errors"
 	"runtime"
-	"sync"
 	"sync/atomic"
 	"syscall"
 
@@ -17,6 +16,8 @@ var (
 	ErrQueueClosed = errors.New("queue closed")
 )
 
+type QueueCQEHandler func(cqe *gouring.CQEntry) (err error)
+
 type Queue struct {
 	ring *gouring.Ring
 	sq   *gouring.SQRing
@@ -24,9 +25,6 @@ type Queue struct {
 
 	sqeHead uint32
 	sqeTail uint32
-
-	sMx  sync.Mutex
-	cqMx sync.Mutex
 
 	err error
 
@@ -115,8 +113,8 @@ func (q *Queue) isNeedEnter(flags *uint32) bool {
 }
 
 func (q *Queue) Submit() (ret int, err error) {
-	q.sMx.Lock()
-	defer q.sMx.Unlock()
+	// q.sMx.Lock()
+	// defer q.sMx.Unlock()
 	submitted := q.sqFlush()
 
 	var flags uint32
@@ -148,9 +146,9 @@ func (q *Queue) cqAdvance(d uint32) {
 	}
 }
 
-func (q *Queue) GetCQEvent(wait bool) (cqe *gouring.CQEntry, err error) {
-	q.cqMx.Lock()
-	defer q.cqMx.Unlock()
+func (q *Queue) GetCQEntry(wait bool) (cqe *gouring.CQEntry, err error) {
+	// q.cqMx.Lock()
+	// defer q.cqMx.Unlock()
 	if err = q.precheck(); err != nil {
 		return
 	}
@@ -187,17 +185,21 @@ func (q *Queue) Err() error {
 	return q.err
 }
 
-func (q *Queue) Run(f func(cqe *gouring.CQEntry)) {
+func (q *Queue) Run(wait bool, f QueueCQEHandler) (err error) {
 	for q.precheck() == nil {
-		cqe, err := q.GetCQEvent(true)
+		cqe, err := q.GetCQEntry(wait)
 		if cqe == nil || err != nil {
 			q.err = err
 			if err == ErrQueueClosed {
-				return
+				return err
 			}
 			continue
 		}
 
-		f(cqe)
+		err = f(cqe)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }

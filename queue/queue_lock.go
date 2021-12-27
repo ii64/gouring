@@ -26,6 +26,12 @@ func (q *QueueLocks) Submit() (ret int, err error) {
 	return q.Queue.Submit()
 }
 
+func (q *QueueLocks) SubmitAndWait(waitNr uint) (ret int, err error) {
+	q.sMx.Lock()
+	defer q.sMx.Unlock()
+	return q.Queue.SubmitAndWait(waitNr)
+}
+
 //
 
 func (q *QueueLocks) GetCQEntry(wait bool) (cqe *gouring.CQEntry, err error) {

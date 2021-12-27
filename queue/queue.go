@@ -115,6 +115,12 @@ func (q *Queue) isNeedEnter(flags *uint32) bool {
 func (q *Queue) Submit() (ret int, err error) {
 	// q.sMx.Lock()
 	// defer q.sMx.Unlock()
+	return q.SubmitAndWait(0)
+}
+
+func (q *Queue) SubmitAndWait(waitNr uint) (ret int, err error) {
+	// q.sMx.Lock()
+	// defer q.sMx.Unlock()
 	submitted := q.sqFlush()
 
 	var flags uint32
@@ -126,7 +132,7 @@ func (q *Queue) Submit() (ret int, err error) {
 		flags |= gouring.IORING_ENTER_GETEVENTS
 	}
 
-	ret, err = q.ring.Enter(uint(submitted), 0, flags, nil)
+	ret, err = q.ring.Enter(uint(submitted), waitNr, flags, nil)
 	return
 }
 
@@ -147,6 +153,10 @@ func (q *Queue) cqAdvance(d uint32) {
 }
 
 func (q *Queue) GetCQEntry(wait bool) (cqe *gouring.CQEntry, err error) {
+	return q.GetCQEntryWait(wait, 0)
+}
+
+func (q *Queue) GetCQEntryWait(wait bool, waitNr uint) (cqe *gouring.CQEntry, err error) {
 	// q.cqMx.Lock()
 	// defer q.cqMx.Unlock()
 	if err = q.precheck(); err != nil {
@@ -162,10 +172,15 @@ func (q *Queue) GetCQEntry(wait bool) (cqe *gouring.CQEntry, err error) {
 		if !wait && !q.sq.IsCQOverflow() {
 			err = syscall.EAGAIN
 			return
+		} else if waitNr > 0 {
+			_, err = q.ring.Enter(0, waitNr, gouring.IORING_ENTER_GETEVENTS, nil)
+			if err != nil {
+				return
+			}
 		}
 
 		if q.sq.IsCQOverflow() {
-			_, err = q.ring.Enter(0, 0, gouring.IORING_ENTER_GETEVENTS, nil)
+			_, err = q.ring.Enter(0, waitNr, gouring.IORING_ENTER_GETEVENTS, nil)
 			if err != nil {
 				return
 			}
@@ -176,13 +191,31 @@ func (q *Queue) GetCQEntry(wait bool) (cqe *gouring.CQEntry, err error) {
 			runtime.Gosched()
 			continue
 		}
-
 		// implement interrupt
 	}
 }
 
 func (q *Queue) Err() error {
 	return q.err
+}
+
+func (q *Queue) RunPoll(wait bool, waitNr uint, f QueueCQEHandler) (err error) {
+	for q.precheck() == nil {
+		cqe, err := q.GetCQEntryWait(wait, waitNr)
+		if cqe == nil || err != nil {
+			q.err = err
+			if err == ErrQueueClosed {
+				return err
+			}
+			continue
+		}
+
+		err = f(cqe)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (q *Queue) Run(wait bool, f QueueCQEHandler) (err error) {

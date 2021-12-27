@@ -40,6 +40,30 @@ func (q *QueueLocks) GetCQEntry(wait bool) (cqe *gouring.CQEntry, err error) {
 	return q.Queue.GetCQEntry(wait)
 }
 
+func (q *QueueLocks) GetCQEntryWait(wait bool, waitNr uint) (cqe *gouring.CQEntry, err error) {
+	q.cqMx.Lock()
+	defer q.cqMx.Unlock()
+	return q.Queue.GetCQEntryWait(wait, waitNr)
+}
+
+func (q *QueueLocks) RunPoll(wait bool, waitNr uint, f QueueCQEHandler) (err error) {
+	for q.precheck() == nil {
+		cqe, err := q.GetCQEntryWait(wait, waitNr)
+		if cqe == nil || err != nil {
+			if err == ErrQueueClosed {
+				return err
+			}
+			continue
+		}
+
+		err = f(cqe)
+		if err != nil {
+			return err
+		}
+	}
+	return
+}
+
 func (q *QueueLocks) Run(wait bool, f QueueCQEHandler) (err error) {
 	for q.precheck() == nil {
 		cqe, err := q.GetCQEntry(wait)

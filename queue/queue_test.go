@@ -6,6 +6,7 @@ import (
 	"sync"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/ii64/gouring"
 	"github.com/stretchr/testify/assert"
@@ -42,6 +43,7 @@ func TestQueue(t *testing.T) {
 
 	// create new queue
 	q := New(ring)
+	defer q.Close()
 	go func() {
 		for i, b := range btests {
 			sqe := q.GetSQEntry()
@@ -72,4 +74,46 @@ func TestQueue(t *testing.T) {
 	}()
 
 	wg.Wait()
+}
+
+func TestQueuePolling(t *testing.T) {
+	ring, err := gouring.New(64, &gouring.IOUringParams{})
+	assert.NoError(t, err, "create ring")
+	defer func() {
+		err := ring.Close()
+		assert.NoError(t, err, "close ring")
+	}()
+
+	q := New(ring)
+	defer q.Close()
+
+	var tb = []byte("write me on stdout\n")
+	var tu uint64 = 0xfafa
+	chDone := make(chan struct{}, 1)
+
+	go q.RunPoll(true, 1, func(cqe *gouring.CQEntry) (err error) {
+		if cqe.Res < 0 {
+			t.Error(syscall.Errno(cqe.Res * -1))
+		}
+		assert.Equal(t, uint64(tu), uint64(cqe.UserData), "mismatch userdata")
+		assert.Equal(t, uint64(len(tb)), uint64(cqe.Res), "mismatch written size")
+		chDone <- struct{}{}
+		return nil
+	})
+
+	t.Log("wait 3 second...")
+	sqe := q.GetSQEntry()
+	sqe.UserData = tu
+	write(sqe, syscall.Stdout, tb)
+
+	n, err := q.Submit()
+	assert.NoError(t, err, "submit")
+	assert.Equal(t, 1, n, "submitted count")
+
+	select {
+	case <-chDone:
+	case <-time.After(time.Second * 5):
+		t.Error("timeout wait")
+		t.Fail()
+	}
 }

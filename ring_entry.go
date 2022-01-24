@@ -37,7 +37,9 @@ type SQEntry struct {
 
 	splice_fd_in__file_index int32 // union { __s32 splice_fd_in, __u32 file_index }
 
-	pad2 [2]uint64
+	addr3 uint64
+
+	pad2 [1]uint64
 }
 
 func (sqe *SQEntry) Offset() *uint64 {
@@ -84,10 +86,17 @@ func (sqe *SQEntry) FileIndex() *uint32 {
 	return (*uint32)(unsafe.Pointer(&sqe.splice_fd_in__file_index))
 }
 
+func (sqe *SQEntry) Addr3() *uint64 {
+	return (*uint64)(unsafe.Pointer(&sqe.addr3))
+}
+func (sqe *SQEntry) SetAddr3(v interface{}) {
+	*sqe.Addr3() = (uint64)(reflect.ValueOf(v).Pointer())
+}
+
 //
 
 func (sqe *SQEntry) Reset() {
-	*sqe = _sqe
+	*sqe = SQEntry{}
 }
 
 //-- CQEntry
@@ -99,5 +108,5 @@ type CQEntry struct {
 }
 
 func (cqe *CQEntry) Reset() {
-	*cqe = _cqe
+	*cqe = CQEntry{}
 }

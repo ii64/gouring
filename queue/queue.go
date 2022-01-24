@@ -63,7 +63,7 @@ func (q *Queue) _getSQEntry() *gouring.SQEntry {
 	head := atomic.LoadUint32(q.sq.Head())
 	next := q.sqeTail + 1
 	if (next - head) <= atomic.LoadUint32(q.sq.RingEntries()) {
-		sqe := q.sq.Get(q.sqeTail & atomic.LoadUint32(q.sq.RingMask()))
+		sqe := q.sq.Get(q.sqeTail & (*q.sq.RingMask()))
 		q.sqeTail = next
 		sqe.Reset()
 		return sqe
@@ -77,7 +77,7 @@ func (q *Queue) GetSQEntry() (sqe *gouring.SQEntry) {
 		if sqe != nil {
 			return
 		}
-		runtime.Gosched()
+		// runtime.Gosched()
 	}
 }
 
@@ -86,23 +86,23 @@ func (q *Queue) sqFallback(d uint32) {
 }
 
 func (q *Queue) sqFlush() uint32 {
+	khead := atomic.LoadUint32(q.sq.Head())
+	ktail := atomic.LoadUint32(q.sq.Tail())
 	if q.sqeHead == q.sqeTail {
-		return atomic.LoadUint32(q.sq.Tail()) - atomic.LoadUint32(q.sq.Head())
+		return ktail - khead
 	}
 
-	ktail := atomic.LoadUint32(q.sq.Tail())
 	for toSubmit := q.sqeTail - q.sqeHead; toSubmit > 0; toSubmit-- {
 		*q.sq.Array().Get(ktail & (*q.sq.RingMask())) = q.sqeHead & (*q.sq.RingMask())
 		ktail++
 		q.sqeHead++
 	}
-
 	atomic.StoreUint32(q.sq.Tail(), ktail)
-	return ktail - *q.sq.Head()
+	return ktail - khead
 }
 
 func (q *Queue) isNeedEnter(flags *uint32) bool {
-	if (q.ring.Params().Features & gouring.IORING_SETUP_SQPOLL) > 0 {
+	if (q.ring.Params().Flags & gouring.IORING_SETUP_SQPOLL) == 0 {
 		return true
 	}
 	if q.sq.IsNeedWakeup() {
@@ -139,9 +139,9 @@ func (q *Queue) SubmitAndWait(waitNr uint) (ret int, err error) {
 //
 
 func (q *Queue) cqPeek() (cqe *gouring.CQEntry) {
-	head := atomic.LoadUint32(q.cq.Head())
-	if head != atomic.LoadUint32(q.cq.Tail()) {
-		cqe = q.cq.Get(head & atomic.LoadUint32(q.cq.RingMask()))
+	khead := atomic.LoadUint32(q.cq.Head())
+	if khead != atomic.LoadUint32(q.cq.Tail()) {
+		cqe = q.cq.Get(khead & atomic.LoadUint32(q.cq.RingMask()))
 	}
 	return
 }
@@ -180,7 +180,7 @@ func (q *Queue) GetCQEntryWait(wait bool, waitNr uint) (cqe *gouring.CQEntry, er
 		}
 
 		if q.sq.IsCQOverflow() {
-			_, err = q.ring.Enter(0, waitNr, gouring.IORING_ENTER_GETEVENTS, nil)
+			_, err = q.ring.Enter(0, 0, gouring.IORING_ENTER_GETEVENTS, nil)
 			if err != nil {
 				return
 			}

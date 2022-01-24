@@ -7,6 +7,7 @@ import (
 	"syscall"
 	"testing"
 	"time"
+	"unsafe"
 
 	"github.com/ii64/gouring"
 	"github.com/stretchr/testify/assert"
@@ -43,7 +44,13 @@ func TestQueue(t *testing.T) {
 
 	// create new queue
 	q := New(ring)
-	defer q.Close()
+	defer func() {
+		err := q.Close()
+		assert.NoError(t, err, "close queue")
+	}()
+
+	//
+
 	go func() {
 		for i, b := range btests {
 			sqe := q.GetSQEntry()
@@ -85,7 +92,12 @@ func TestQueuePolling(t *testing.T) {
 	}()
 
 	q := New(ring)
-	defer q.Close()
+	defer func() {
+		err := q.Close()
+		assert.NoError(t, err, "close queue")
+	}()
+
+	// test data
 
 	var tb = []byte("write me on stdout\n")
 	var tu uint64 = 0xfafa
@@ -115,5 +127,73 @@ func TestQueuePolling(t *testing.T) {
 	case <-time.After(time.Second * 5):
 		t.Error("timeout wait")
 		t.Fail()
+	}
+}
+
+//
+
+var (
+	Entries = 512
+	ring    *gouring.Ring
+	q       *Queue
+)
+
+func init() {
+	var err error
+	ring, err = gouring.New(uint(Entries), nil)
+	if err != nil {
+		panic(err)
+	}
+	q = New(ring)
+}
+
+func BenchmarkQueueBatchingNOP(b *testing.B) {
+	var sqe *gouring.SQEntry
+	for j := 0; j < b.N; j++ {
+		for i := 0; i < Entries; i++ {
+			sqe = q.GetSQEntry()
+			sqe.Opcode = gouring.IORING_OP_NOP
+			sqe.UserData = uint64(i)
+		}
+		n, err := q.SubmitAndWait(uint(Entries))
+		assert.NoError(b, err, "submit")
+		assert.Equal(b, Entries, n, "submit result entries")
+		for i := 0; i < Entries; i++ {
+			v := uint64(i)
+			cqe, err := q.GetCQEntry(true)
+			assert.NoError(b, err, "cqe wait error")
+			assert.Equal(b, int32(0), cqe.Res)
+			assert.Equal(b, v, cqe.UserData)
+		}
+	}
+}
+
+//
+
+var (
+	_sqe    StructTest
+	_sz_sqe = unsafe.Sizeof(_sqe)
+	_sqe_mm = make([]byte, _sz_sqe)
+
+	m = &StructTest{}
+)
+
+type StructTest = gouring.SQEntry
+
+func BenchmarkSetPtrVal(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		*m = _sqe
+	}
+}
+
+func BenchmarkSetPtrValEmpty(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		*m = StructTest{}
+	}
+}
+
+func BenchmarkSetPtrCpy(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		copy(*(*[]byte)(unsafe.Pointer(m)), _sqe_mm)
 	}
 }

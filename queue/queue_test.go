@@ -26,6 +26,66 @@ func mkdata(i int) []byte {
 	return []byte("queue pls" + strings.Repeat("!", i) + fmt.Sprintf("%d", i) + "\n")
 }
 
+func TestQueueSQPoll(t *testing.T) {
+	ring, err := gouring.New(256, &gouring.IOUringParams{
+		Flags:        gouring.IORING_SETUP_SQPOLL,
+		SQThreadIdle: 70 * 1000,
+	})
+	assert.NoError(t, err, "create ring")
+	defer func() {
+		err := ring.Close()
+		assert.NoError(t, err, "close ring")
+	}()
+
+	N := 64 + 64
+	var wg sync.WaitGroup
+	btests := [][]byte{}
+	for i := 0; i < N; i++ {
+		btests = append(btests, mkdata(i))
+	}
+	wg.Add(N)
+
+	// create new queue
+	q := New(ring)
+	defer func() {
+		err := q.Close()
+		assert.NoError(t, err, "close queue")
+	}()
+
+	//
+
+	go func() {
+		for i, b := range btests {
+			sqe := q.GetSQEntry()
+			sqe.UserData = uint64(i)
+			// sqe.Flags = gouring.IOSQE_IO_DRAIN
+			write(sqe, syscall.Stdout, b)
+			if (i+1)%2 == 0 {
+				n, err := q.Submit()
+				assert.NoError(t, err, "queue submit")
+				// assert.Equal(t, 2, n, "submit count mismatch") // may varies due to kernel thread consumng submission queue process time
+				fmt.Printf("submitted %d\n", n)
+			}
+		}
+	}()
+	go func() {
+		q.Run(true, func(cqe *gouring.CQEntry) (err error) {
+			defer wg.Done()
+			fmt.Printf("cqe: %+#v\n", cqe)
+			assert.Condition(t, func() (success bool) {
+				return cqe.UserData < uint64(len(btests))
+			}, "userdata is set with the btest index")
+			assert.Conditionf(t, func() (success bool) {
+				return len(btests[cqe.UserData]) == int(cqe.Res)
+			}, "OP_WRITE result mismatch: %+#v", cqe)
+
+			return nil
+		})
+	}()
+
+	wg.Wait()
+}
+
 func TestQueue(t *testing.T) {
 	ring, err := gouring.New(256, nil)
 	assert.NoError(t, err, "create ring")
@@ -60,7 +120,7 @@ func TestQueue(t *testing.T) {
 			if (i+1)%2 == 0 {
 				n, err := q.Submit()
 				assert.NoError(t, err, "queue submit")
-				assert.Equal(t, n, 2, "submit count mismatch")
+				assert.Equal(t, 2, n, "submit count mismatch")
 				fmt.Printf("submitted %d\n", n)
 			}
 		}

@@ -88,6 +88,8 @@ func (q *Queue) sqFallback(d uint32) {
 func (q *Queue) sqFlush() uint32 {
 	khead := atomic.LoadUint32(q.sq.Head())
 	ktail := atomic.LoadUint32(q.sq.Tail())
+
+	// if sq head equals sq tail
 	if q.sqeHead == q.sqeTail {
 		return ktail - khead
 	}
@@ -106,7 +108,7 @@ func (q *Queue) isNeedEnter(flags *uint32) bool {
 		return true
 	}
 	if q.sq.IsNeedWakeup() {
-		*flags |= gouring.IORING_SQ_NEED_WAKEUP
+		*flags |= gouring.IORING_ENTER_SQ_WAKEUP
 		return true
 	}
 	return false
@@ -125,6 +127,7 @@ func (q *Queue) SubmitAndWait(waitNr uint) (ret int, err error) {
 
 	var flags uint32
 	if !q.isNeedEnter(&flags) || submitted == 0 {
+		ret = int(submitted)
 		return
 	}
 

@@ -61,10 +61,10 @@ func (r *Ring) Fd() int {
 	return r.fd
 }
 
-func (r *Ring) SQ() *SQRing {
-	return &r.sq
+func (r *Ring) SQ() SQRing {
+	return r.sq
 }
 
-func (r *Ring) CQ() *CQRing {
-	return &r.cq
+func (r *Ring) CQ() CQRing {
+	return r.cq
 }

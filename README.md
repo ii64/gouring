@@ -79,7 +79,9 @@ if err != nil {
 
 > Check out test script [here](https://gist.github.com/ii64/3a4e8f5c689bb65b2fb9c5f2b1a5904d)
 
-<table><tr><td>
+<table><tr>
+<td>SQPOLL</td><td>non-SQPOLL</td>
+</tr><tr><td>
 
 ![graph sqpoll][3]
 

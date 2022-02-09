@@ -77,7 +77,7 @@ if err != nil {
 
 ## Graph
 
-> Check out test script [here](https://gist.github.com/ii64/3a4e8f5c689bb65b2fb9c5f2b1a5904d)
+> Check out test script [here][5]
 
 <table><tr>
 <td>SQPOLL</td><td>non-SQPOLL</td>
@@ -101,3 +101,4 @@ if err != nil {
 [2]: https://pkg.go.dev/badge/github.com/ii64/gouring.svg
 [3]: assets/sqpoll.svg
 [4]: assets/nosqpoll.svg
+[5]: https://gist.github.com/ii64/3a4e8f5c689bb65b2fb9c5f2b1a5904d

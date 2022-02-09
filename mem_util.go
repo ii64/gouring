@@ -20,6 +20,7 @@ func mmap(addr uintptr, length uintptr, prot int, flags int, fd int, offset int6
 //go:linkname munmap syscall.munmap
 func munmap(addr uintptr, length uintptr) (err error)
 
+// io uring setup
 func setup(r *Ring, entries uint, parmas *IOUringParams) (ringFd int, err error) {
 	var sq = &r.sq
 	var cq = &r.cq
@@ -114,6 +115,7 @@ func setup(r *Ring, entries uint, parmas *IOUringParams) (ringFd int, err error)
 	return
 }
 
+// io uring unsetup
 func unsetup(r *Ring) (err error) {
 	if r.sqesPtr != 0 {
 		if err = munmap(r.sqesPtr, uintptr(r.params.SQEntries)); err != nil {
@@ -135,6 +137,7 @@ func unsetup(r *Ring) (err error) {
 	return
 }
 
+// io uring register fd
 func register(r *Ring, opcode UringRegisterOpcode, arg uintptr, nrArg uint) (ret int, err error) {
 	if ret, err = io_uring_register(r.fd, opcode, arg, nrArg); err != nil {
 		err = errors.Wrap(err, "io_uring_register")
@@ -143,6 +146,7 @@ func register(r *Ring, opcode UringRegisterOpcode, arg uintptr, nrArg uint) (ret
 	return
 }
 
+// io uirng enter
 func enter(r *Ring, toSubmit, minComplete uint, flags UringEnterFlag, sig *Sigset_t) (ret int, err error) {
 	if ret, err = io_uring_enter(r.fd, toSubmit, minComplete, uint(flags), sig); err != nil {
 		err = errors.Wrap(err, "io_uring_enter")

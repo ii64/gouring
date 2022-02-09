@@ -1,7 +1,6 @@
 package gouring
 
 import (
-	"fmt"
 	"reflect"
 	"syscall"
 	"unsafe"
@@ -94,8 +93,6 @@ func setup(r *Ring, entries uint, parmas *IOUringParams) (ringFd int, err error)
 		Cap:  int(p.SQEntries),
 	}))
 
-	fmt.Printf("insp %+#v %+#v\n", len(sq.Event), cap(sq.Event))
-
 	// CQ
 
 	cq.Head = (*uint32)(unsafe.Pointer(cqRingPtr + uintptr(p.CQOff.Head)))
@@ -109,8 +106,6 @@ func setup(r *Ring, entries uint, parmas *IOUringParams) (ringFd int, err error)
 		Len:  int(p.CQEntries),
 		Cap:  int(p.CQEntries),
 	}))
-
-	fmt.Printf("insp %+#v %+#v\n", len(cq.Event), cap(cq.Event))
 
 	return
 }

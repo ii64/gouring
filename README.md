@@ -1,8 +1,8 @@
 # gouring
 
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Go Reference](https://pkg.go.dev/badge/github.com/ii64/gouring.svg)](https://pkg.go.dev/github.com/ii64/gouring)
+[![License: MIT][1]](LICENSE)
+[![Go Reference][2]](https://pkg.go.dev/github.com/ii64/gouring)
 
 Low-level io uring library
 
@@ -75,5 +75,30 @@ if err != nil {
 }
 ```
 
+## Graph
+
+> Check out test script [here][5]
+
+<table><tr>
+<td>SQPOLL</td><td>non-SQPOLL</td>
+</tr><tr><td>
+
+![graph sqpoll][3]
+
+</td><td>
+
+![graph non sqpoll][4]
+
+</td></tr></table>
+
+
+
 ### Referece
 [github.com/iceber/iouring-go](https://github.com/iceber/iouring-go)
+
+
+[1]: https://img.shields.io/badge/License-MIT-yellow.svg
+[2]: https://pkg.go.dev/badge/github.com/ii64/gouring.svg
+[3]: assets/sqpoll.svg
+[4]: assets/nosqpoll.svg
+[5]: https://gist.github.com/ii64/3a4e8f5c689bb65b2fb9c5f2b1a5904d

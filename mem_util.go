@@ -1,6 +1,7 @@
 package gouring
 
 import (
+	"reflect"
 	"syscall"
 	"unsafe"
 
@@ -18,6 +19,7 @@ func mmap(addr uintptr, length uintptr, prot int, flags int, fd int, offset int6
 //go:linkname munmap syscall.munmap
 func munmap(addr uintptr, length uintptr) (err error)
 
+// io uring setup
 func setup(r *Ring, entries uint, parmas *IOUringParams) (ringFd int, err error) {
 	var sq = &r.sq
 	var cq = &r.cq
@@ -68,15 +70,14 @@ func setup(r *Ring, entries uint, parmas *IOUringParams) (ringFd int, err error)
 	r.sqRingPtr = sqRingPtr
 	r.cqRingPtr = cqRingPtr
 
-	//
+	// SQ
 
-	// address Go's ring with base+offset allocated
-	sq.head = sqRingPtr + uintptr(p.SQOff.Head)
-	sq.tail = sqRingPtr + uintptr(p.SQOff.Tail)
-	sq.ringMask = sqRingPtr + uintptr(p.SQOff.RingMask)
-	sq.ringEntries = sqRingPtr + uintptr(p.SQOff.RingEntries)
-	sq.flags = sqRingPtr + uintptr(p.SQOff.Flags)
-	sq.array = uint32Array(sqRingPtr + uintptr(p.SQOff.Array))
+	sq.Head = (*uint32)(unsafe.Pointer(sqRingPtr + uintptr(p.SQOff.Head)))
+	sq.Tail = (*uint32)(unsafe.Pointer(sqRingPtr + uintptr(p.SQOff.Tail)))
+	sq.RingMask = (*uint32)(unsafe.Pointer(sqRingPtr + uintptr(p.SQOff.RingMask)))
+	sq.RingEntries = (*uint32)(unsafe.Pointer(sqRingPtr + uintptr(p.SQOff.RingEntries)))
+	sq.Flags = (*uint32)(unsafe.Pointer(sqRingPtr + uintptr(p.SQOff.Flags)))
+	sq.Array = uint32Array(sqRingPtr + uintptr(p.SQOff.Array)) // non fixed array size, controlled by ring mask
 	r.sqesPtr, err = mmap(0, uintptr(p.SQEntries*uint32(_sz_sqe)),
 		syscall.PROT_READ|syscall.PROT_WRITE,
 		syscall.MAP_SHARED|syscall.MAP_POPULATE,
@@ -85,19 +86,31 @@ func setup(r *Ring, entries uint, parmas *IOUringParams) (ringFd int, err error)
 		err = errors.Wrap(err, "mmap sqes")
 		return
 	}
-	sq.sqes = sqeArray(r.sqesPtr)
 
-	//
+	sq.Event = *(*[]SQEntry)(unsafe.Pointer(&reflect.SliceHeader{
+		Data: r.sqesPtr,
+		Len:  int(p.SQEntries),
+		Cap:  int(p.SQEntries),
+	}))
 
-	cq.head = cqRingPtr + uintptr(p.CQOff.Head)
-	cq.tail = cqRingPtr + uintptr(p.CQOff.Tail)
-	cq.ringMask = cqRingPtr + uintptr(p.CQOff.RingMask)
-	cq.ringEntries = cqRingPtr + uintptr(p.CQOff.RingEntries)
-	cq.cqes = cqeArray(cqRingPtr + uintptr(p.CQOff.CQEs))
+	// CQ
+
+	cq.Head = (*uint32)(unsafe.Pointer(cqRingPtr + uintptr(p.CQOff.Head)))
+	cq.Tail = (*uint32)(unsafe.Pointer(cqRingPtr + uintptr(p.CQOff.Tail)))
+	cq.RingMask = (*uint32)(unsafe.Pointer(cqRingPtr + uintptr(p.CQOff.RingMask)))
+	cq.RingEntries = (*uint32)(unsafe.Pointer(cqRingPtr + uintptr(p.CQOff.RingEntries)))
+	cqesPtr := cqRingPtr + uintptr(p.CQOff.CQEs)
+
+	cq.Event = *(*[]CQEntry)(unsafe.Pointer(&reflect.SliceHeader{
+		Data: cqesPtr,
+		Len:  int(p.CQEntries),
+		Cap:  int(p.CQEntries),
+	}))
 
 	return
 }
 
+// io uring unsetup
 func unsetup(r *Ring) (err error) {
 	if r.sqesPtr != 0 {
 		if err = munmap(r.sqesPtr, uintptr(r.params.SQEntries)); err != nil {
@@ -119,6 +132,7 @@ func unsetup(r *Ring) (err error) {
 	return
 }
 
+// io uring register fd
 func register(r *Ring, opcode UringRegisterOpcode, arg uintptr, nrArg uint) (ret int, err error) {
 	if ret, err = io_uring_register(r.fd, opcode, arg, nrArg); err != nil {
 		err = errors.Wrap(err, "io_uring_register")
@@ -127,6 +141,7 @@ func register(r *Ring, opcode UringRegisterOpcode, arg uintptr, nrArg uint) (ret
 	return
 }
 
+// io uirng enter
 func enter(r *Ring, toSubmit, minComplete uint, flags UringEnterFlag, sig *Sigset_t) (ret int, err error) {
 	if ret, err = io_uring_enter(r.fd, toSubmit, minComplete, uint(flags), sig); err != nil {
 		err = errors.Wrap(err, "io_uring_enter")

@@ -23,10 +23,11 @@ func TestCore(t *testing.T) {
 	sq := ring.SQ()
 	n := 5
 	for i := 0; i < n; i++ {
-		sqTail := *sq.Tail()
-		sqIdx := sqTail & *sq.RingMask()
+		sqTail := *sq.Tail
+		sqIdx := sqTail & *sq.RingMask
 
-		sqe := sq.Get(sqIdx)
+		sqe := &sq.Event[sqIdx]
+		sqe.Reset()
 
 		m := mkdata(i)
 
@@ -37,8 +38,8 @@ func TestCore(t *testing.T) {
 		sqe.SetOffset(0)
 		sqe.SetAddr(&m[0])
 
-		*sq.Array().Get(sqIdx) = *sq.Head() & *sq.RingMask()
-		*sq.Tail()++
+		*sq.Array.Get(sqIdx) = *sq.Head & *sq.RingMask
+		*sq.Tail++
 
 		done, err := ring.Enter(1, 1, IORING_ENTER_GETEVENTS, nil)
 		assert.NoError(t, err, "ring enter")
@@ -47,13 +48,13 @@ func TestCore(t *testing.T) {
 
 	// get cq
 	cq := ring.CQ()
-	for i := 0; i < int(*cq.Tail()); i++ {
-		cqHead := *cq.Head()
-		cqIdx := cqHead & *cq.RingMask()
+	for i := 0; i < int(*cq.Tail); i++ {
+		cqHead := *cq.Head
+		cqIdx := cqHead & *cq.RingMask
 
-		cqe := cq.Get(cqIdx)
+		cqe := cq.Event[cqIdx]
 
-		*cq.Head()++
+		*cq.Head++
 		t.Logf("CQE %+#v", cqe)
 	}
 

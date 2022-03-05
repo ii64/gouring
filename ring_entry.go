@@ -17,27 +17,79 @@ var (
 //-- SQEntry
 
 type SQEntry struct {
+	// type of operation for this sqe
 	Opcode UringOpcode
-	Flags  UringSQEFlag
+
+	// IOSQE_ flags
+	Flags UringSQEFlag
+
+	// ioprio for the request
 	Ioprio uint16
-	Fd     int32
 
-	off__addr2          uint64 // union { off, addr2 }
-	addr__splice_off_in uint64 // union { addr, splice_off_in }
+	// file descriptor to do IO on
+	Fd int32
 
+	/* union {
+	  off,            // offset into file
+	  addr2;
+	} */
+	off__addr2 uint64
+
+	/* union {
+	  addr,           // pointer to buffer or iovecs
+	  splice_off_in
+	} */
+	addr__splice_off_in uint64
+
+	// buffer size or number iovecs
 	Len uint32
 
-	opcode__flags_events uint32 // union of events and flags for opcode
+	/* union of events and flags for Opcode
+	union {
+		__kernel_rwf_t	rw_flags;
+		__u32		fsync_flags;
+		__u16		poll_events;	  // compatibility
+		__u32		poll32_events;	  // word-reversed for BE
+		__u32		sync_range_flags;
+		__u32		msg_flags;
+		__u32		timeout_flags;
+		__u32		accept_flags;
+		__u32		cancel_flags;
+		__u32		open_flags;
+		__u32		statx_flags;
+		__u32		fadvise_advice;
+		__u32		splice_flags;
+		__u32		rename_flags;
+		__u32		unlink_flags;
+		__u32		hardlink_flags;
+		__u32		xattr_flags;
+	} */
+	opcode__flags_events uint32
 
+	// data to be passed back at completion time
 	UserData uint64
 
-	buf__index_group uint16 // union {buf_index, buf_group}
+	/* pack this to avoid bogus arm OABI complaints
+	union {
+		// index into fixed buffers, if used
+		__u16	buf_index;
+		// for grouped buffer selection
+		__u16	buf_group;
+	} __attribute__((packed)); */
+	buf__index_group uint16
 
+	// personality to use, if used
 	Personality uint16
 
-	splice_fd_in__file_index int32 // union { __s32 splice_fd_in, __u32 file_index }
+	/* -
+	union {
+		__s32	splice_fd_in;
+		__u32	file_index;
+	} */
+	splice_fd_in__file_index int32
 
-	pad2 [2]uint64
+	addr3 uint64
+	pad2  [1]uint64
 }
 
 func (sqe *SQEntry) Offset() *uint64 {
@@ -84,10 +136,17 @@ func (sqe *SQEntry) FileIndex() *uint32 {
 	return (*uint32)(unsafe.Pointer(&sqe.splice_fd_in__file_index))
 }
 
+func (sqe *SQEntry) Addr3() *uint64 {
+	return (*uint64)(unsafe.Pointer(&sqe.addr3))
+}
+func (sqe *SQEntry) SetAddr3(v interface{}) {
+	*sqe.Addr3() = (uint64)(reflect.ValueOf(v).Pointer())
+}
+
 //
 
 func (sqe *SQEntry) Reset() {
-	*sqe = _sqe
+	*sqe = SQEntry{}
 }
 
 //-- CQEntry
@@ -99,5 +158,5 @@ type CQEntry struct {
 }
 
 func (cqe *CQEntry) Reset() {
-	*cqe = _cqe
+	*cqe = CQEntry{}
 }

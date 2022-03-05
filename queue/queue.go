@@ -20,8 +20,8 @@ type QueueCQEHandler func(cqe *gouring.CQEntry) (err error)
 
 type Queue struct {
 	ring *gouring.Ring
-	sq   *gouring.SQRing
-	cq   *gouring.CQRing
+	sq   gouring.SQRing
+	cq   gouring.CQRing
 
 	sqeHead uint32
 	sqeTail uint32
@@ -59,11 +59,12 @@ func (q *Queue) precheck() error {
 
 //
 
+// SQEntry ptr returned is passed by value
 func (q *Queue) _getSQEntry() *gouring.SQEntry {
-	head := atomic.LoadUint32(q.sq.Head())
+	head := atomic.LoadUint32(q.sq.Head)
 	next := q.sqeTail + 1
-	if (next - head) <= atomic.LoadUint32(q.sq.RingEntries()) {
-		sqe := q.sq.Get(q.sqeTail & atomic.LoadUint32(q.sq.RingMask()))
+	if (next - head) <= atomic.LoadUint32(q.sq.RingEntries) {
+		sqe := &q.sq.Event[q.sqeTail&(*q.sq.RingMask)]
 		q.sqeTail = next
 		sqe.Reset()
 		return sqe
@@ -77,6 +78,7 @@ func (q *Queue) GetSQEntry() (sqe *gouring.SQEntry) {
 		if sqe != nil {
 			return
 		}
+
 		runtime.Gosched()
 	}
 }
@@ -86,27 +88,29 @@ func (q *Queue) sqFallback(d uint32) {
 }
 
 func (q *Queue) sqFlush() uint32 {
+	khead := atomic.LoadUint32(q.sq.Head)
+	ktail := atomic.LoadUint32(q.sq.Tail)
+
+	// if sq head equals sq tail
 	if q.sqeHead == q.sqeTail {
-		return atomic.LoadUint32(q.sq.Tail()) - atomic.LoadUint32(q.sq.Head())
+		return ktail - khead
 	}
 
-	ktail := atomic.LoadUint32(q.sq.Tail())
 	for toSubmit := q.sqeTail - q.sqeHead; toSubmit > 0; toSubmit-- {
-		*q.sq.Array().Get(ktail & (*q.sq.RingMask())) = q.sqeHead & (*q.sq.RingMask())
+		*q.sq.Array.Get(ktail & (*q.sq.RingMask)) = q.sqeHead & (*q.sq.RingMask)
 		ktail++
 		q.sqeHead++
 	}
-
-	atomic.StoreUint32(q.sq.Tail(), ktail)
-	return ktail - *q.sq.Head()
+	atomic.StoreUint32(q.sq.Tail, ktail)
+	return ktail - khead
 }
 
 func (q *Queue) isNeedEnter(flags *uint32) bool {
-	if (q.ring.Params().Features & gouring.IORING_SETUP_SQPOLL) > 0 {
+	if (q.ring.Params().Flags & gouring.IORING_SETUP_SQPOLL) == 0 {
 		return true
 	}
 	if q.sq.IsNeedWakeup() {
-		*flags |= gouring.IORING_SQ_NEED_WAKEUP
+		*flags |= gouring.IORING_ENTER_SQ_WAKEUP
 		return true
 	}
 	return false
@@ -125,6 +129,7 @@ func (q *Queue) SubmitAndWait(waitNr uint) (ret int, err error) {
 
 	var flags uint32
 	if !q.isNeedEnter(&flags) || submitted == 0 {
+		ret = int(submitted)
 		return
 	}
 
@@ -139,16 +144,16 @@ func (q *Queue) SubmitAndWait(waitNr uint) (ret int, err error) {
 //
 
 func (q *Queue) cqPeek() (cqe *gouring.CQEntry) {
-	head := atomic.LoadUint32(q.cq.Head())
-	if head != atomic.LoadUint32(q.cq.Tail()) {
-		cqe = q.cq.Get(head & atomic.LoadUint32(q.cq.RingMask()))
+	khead := atomic.LoadUint32(q.cq.Head)
+	if khead != atomic.LoadUint32(q.cq.Tail) {
+		cqe = &q.cq.Event[khead&atomic.LoadUint32(q.cq.RingMask)]
 	}
 	return
 }
 
 func (q *Queue) cqAdvance(d uint32) {
 	if d != 0 {
-		atomic.AddUint32(q.cq.Head(), d) // mark readed
+		atomic.AddUint32(q.cq.Head, d) // mark readed
 	}
 }
 
@@ -162,7 +167,7 @@ func (q *Queue) GetCQEntryWait(wait bool, waitNr uint) (cqe *gouring.CQEntry, er
 	if err = q.precheck(); err != nil {
 		return
 	}
-	var tryPeeks int
+	// var tryPeeks int
 	for {
 		if cqe = q.cqPeek(); cqe != nil {
 			q.cqAdvance(1)
@@ -180,17 +185,17 @@ func (q *Queue) GetCQEntryWait(wait bool, waitNr uint) (cqe *gouring.CQEntry, er
 		}
 
 		if q.sq.IsCQOverflow() {
-			_, err = q.ring.Enter(0, waitNr, gouring.IORING_ENTER_GETEVENTS, nil)
+			_, err = q.ring.Enter(0, 0, gouring.IORING_ENTER_GETEVENTS, nil)
 			if err != nil {
 				return
 			}
 			continue
 		}
 
-		if tryPeeks++; tryPeeks < 3 {
-			runtime.Gosched()
-			continue
-		}
+		// if tryPeeks++; tryPeeks < 3 {
+		runtime.Gosched()
+		// continue
+		// }
 		// implement interrupt
 	}
 }

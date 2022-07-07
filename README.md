@@ -34,13 +34,16 @@ _ = cqe.Flags
 
 ## Graph
 
-_placeholder_
+| SQPOLL | non-SQPOLL |
+| ------ | ---------- |
+| ![sqpoll_fig][sqpoll_fig] | ![nonsqpoll_fig][nonsqpoll_fig] |
 
 ### Reference
 
 https://github.com/axboe/liburing
 
-
 [1]: https://img.shields.io/badge/License-MIT-yellow.svg
 [2]: https://pkg.go.dev/badge/github.com/ii64/gouring.svg
 [3]: https://pkg.go.dev/github.com/ii64/gouring
+[sqpoll_fig]: assets/sqpoll.svg
+[nonsqpoll_fig]: assets/nonsqpoll.svg

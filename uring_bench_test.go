@@ -2,6 +2,7 @@ package gouring
 
 import (
 	"context"
+	"runtime"
 	"syscall"
 	"testing"
 )
@@ -15,7 +16,7 @@ func BenchmarkQueueNop(b *testing.B) {
 
 	ts := []opt{
 		{"def-256", 256, IoUringParams{Flags: 0}},
-		{"sqpoll-256-4-10000", 256, IoUringParams{Flags: IORING_SETUP_SQPOLL, SqThreadCpu: 8, SqThreadIdle: 10_000}},
+		{"sqpoll-256-4-10000", 256, IoUringParams{Flags: IORING_SETUP_SQPOLL, SqThreadCpu: 16, SqThreadIdle: 10_000}},
 	}
 
 	consumer := func(h *IoUring, ctx context.Context, count int) {
@@ -60,6 +61,7 @@ func BenchmarkQueueNop(b *testing.B) {
 						if sqe != nil {
 							break
 						}
+						runtime.Gosched()
 					}
 					PrepNop(sqe)
 					sqe.UserData = uint64(i + int(j))

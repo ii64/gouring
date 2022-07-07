@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"runtime/pprof"
 	"syscall"
 	"time"
@@ -89,6 +90,7 @@ func main() {
 				if sqe != nil {
 					break
 				}
+				runtime.Gosched()
 			}
 			gouring.PrepNop(sqe)
 			sqe.UserData = uint64(i + j)

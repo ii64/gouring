@@ -4,15 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime"
 	"runtime/pprof"
 	"syscall"
 	"time"
 
 	"github.com/ii64/gouring"
 )
-
-// usage: go tool pprof -http=:9001 pprof.cpu
 
 var fs = flag.NewFlagSet("perf", flag.ExitOnError)
 
@@ -24,6 +21,8 @@ var (
 
 	N    uint
 	noti uint
+
+	pprofCpuFilename = "pprof.cpu"
 )
 
 func init() {
@@ -34,6 +33,8 @@ func init() {
 
 	fs.UintVar(&N, "n", 10_000, "N times")
 	fs.UintVar(&noti, "noti", 10_000, "Notify per attempt N")
+
+	fs.StringVar(&pprofCpuFilename, "pprofCpu", pprofCpuFilename, "pprof cpu output file")
 }
 
 func main() {
@@ -60,7 +61,7 @@ func main() {
 	}
 	defer h.Close()
 
-	f, err := os.Create("pprof.cpu")
+	f, err := os.Create(pprofCpuFilename)
 	if err != nil {
 		panic(err)
 	}
@@ -82,10 +83,12 @@ func main() {
 		}
 
 		for j = 0; j < entries; j++ {
-			sqe = h.GetSQE()
-			if sqe == nil { // spinning wait...
-				runtime.Gosched()
-				continue
+			for {
+				// sqe could be nil if SQ is already full so we spin until we got one
+				sqe = h.GetSQE()
+				if sqe != nil {
+					break
+				}
 			}
 			gouring.PrepNop(sqe)
 			sqe.UserData = uint64(i + j)

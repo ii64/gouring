@@ -124,9 +124,11 @@ again:
 			count = ready
 		}
 		last = head + count
-		var i uintptr
-		for i = 0; head != last; i++ {
+		var i uintptr = 0
+		for head != last {
 			cqes[i] = ioUringCqeArray_Index(ring.Cq.Cqes, uintptr((head&mask)<<uint32(shift)))
+			i++
+			head++
 		}
 		return count
 	}
@@ -362,7 +364,7 @@ func (ring *IoUring) _io_uring_get_sqe() (sqe *IoUringSqe) {
 	}
 
 	if next-head <= *sq.RingEntries {
-		sqe = ioUringSqeArray_Index(sq.Sqes, uintptr(sq.SqeTail&*sq.RingMask<<shift))
+		sqe = ioUringSqeArray_Index(sq.Sqes, uintptr((sq.SqeTail&*sq.RingMask)<<shift))
 		sq.SqeTail = next
 		return
 	}

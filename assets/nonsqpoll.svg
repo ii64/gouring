@@ -1,341 +1,474 @@
-<svg width="342pt" height="943pt" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <g id="graph0" class="graph" transform="scale(1.3 1.3) rotate(0) translate(4 939)">
+<svg width="478pt" height="1007pt" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="graph0" class="graph" transform="scale(1.3 1.3) rotate(0) translate(4 1003)">
     <title>perf</title>
-    <polygon fill="white" stroke="transparent" points="-4,4 -4,-939 338,-939 338,4 -4,4"></polygon>
+    <polygon fill="white" stroke="transparent" points="-4,4 -4,-1003 474,-1003 474,4 -4,4"></polygon>
     <!-- N1 -->
     <g id="node1" class="node">
     <title>N1</title>
-    <g id="a_node1"><a xlink:title="syscall.RawSyscall6 (2.20s)">
-    <polygon fill="#edd6d5" stroke="#b20500" points="164,-86 0,-86 0,0 164,0 164,-86"></polygon>
-    <text text-anchor="middle" x="82" y="-62.8" font-family="Times,serif" font-size="24.00">syscall</text>
-    <text text-anchor="middle" x="82" y="-36.8" font-family="Times,serif" font-size="24.00">RawSyscall6</text>
-    <text text-anchor="middle" x="82" y="-10.8" font-family="Times,serif" font-size="24.00">2.20s (89.43%)</text>
+    <g id="a_node1"><a xlink:title="syscall.RawSyscall6 (2.06s)">
+    <polygon fill="#edd6d5" stroke="#b20900" points="360.5,-86 196.5,-86 196.5,0 360.5,0 360.5,-86"></polygon>
+    <text text-anchor="middle" x="278.5" y="-62.8" font-family="Times,serif" font-size="24.00">syscall</text>
+    <text text-anchor="middle" x="278.5" y="-36.8" font-family="Times,serif" font-size="24.00">RawSyscall6</text>
+    <text text-anchor="middle" x="278.5" y="-10.8" font-family="Times,serif" font-size="24.00">2.06s (84.08%)</text>
     </a>
     </g>
     </g>
     <!-- N2 -->
     <g id="node2" class="node">
     <title>N2</title>
-    <g id="a_node2"><a xlink:title="runtime.main (2.46s)">
-    <polygon fill="#edd5d5" stroke="#b20000" points="119,-935 45,-935 45,-899 119,-899 119,-935"></polygon>
-    <text text-anchor="middle" x="82" y="-924.1" font-family="Times,serif" font-size="8.00">runtime</text>
-    <text text-anchor="middle" x="82" y="-915.1" font-family="Times,serif" font-size="8.00">main</text>
-    <text text-anchor="middle" x="82" y="-906.1" font-family="Times,serif" font-size="8.00">0 of 2.46s (100%)</text>
+    <g id="a_node2"><a xlink:title="runtime.main (2.45s)">
+    <polygon fill="#edd5d5" stroke="#b20000" points="315.5,-999 241.5,-999 241.5,-963 315.5,-963 315.5,-999"></polygon>
+    <text text-anchor="middle" x="278.5" y="-988.1" font-family="Times,serif" font-size="8.00">runtime</text>
+    <text text-anchor="middle" x="278.5" y="-979.1" font-family="Times,serif" font-size="8.00">main</text>
+    <text text-anchor="middle" x="278.5" y="-970.1" font-family="Times,serif" font-size="8.00">0 of 2.45s (100%)</text>
     </a>
     </g>
     </g>
     <!-- N3 -->
     <g id="node3" class="node">
     <title>N3</title>
-    <g id="a_node3"><a xlink:title="main.main (2.46s)">
-    <polygon fill="#edd5d5" stroke="#b20000" points="128.5,-848 35.5,-848 35.5,-788 128.5,-788 128.5,-848"></polygon>
-    <text text-anchor="middle" x="82" y="-834.4" font-family="Times,serif" font-size="12.00">main</text>
-    <text text-anchor="middle" x="82" y="-821.4" font-family="Times,serif" font-size="12.00">main</text>
-    <text text-anchor="middle" x="82" y="-808.4" font-family="Times,serif" font-size="12.00">0.09s (3.66%)</text>
-    <text text-anchor="middle" x="82" y="-795.4" font-family="Times,serif" font-size="12.00">of 2.46s (100%)</text>
+    <g id="a_node3"><a xlink:title="main.main (2.45s)">
+    <polygon fill="#edd5d5" stroke="#b20000" points="325,-912 232,-912 232,-852 325,-852 325,-912"></polygon>
+    <text text-anchor="middle" x="278.5" y="-898.4" font-family="Times,serif" font-size="12.00">main</text>
+    <text text-anchor="middle" x="278.5" y="-885.4" font-family="Times,serif" font-size="12.00">main</text>
+    <text text-anchor="middle" x="278.5" y="-872.4" font-family="Times,serif" font-size="12.00">0.08s (3.27%)</text>
+    <text text-anchor="middle" x="278.5" y="-859.4" font-family="Times,serif" font-size="12.00">of 2.45s (100%)</text>
     </a>
     </g>
     </g>
     <!-- N2&#45;&gt;N3 -->
     <g id="edge1" class="edge">
     <title>N2-&gt;N3</title>
-    <g id="a_edge1"><a xlink:title="runtime.main -> main.main (2.46s)">
-    <path fill="none" stroke="#b20000" stroke-width="6" d="M82,-898.66C82,-887.54 82,-872.64 82,-858.73"></path>
-    <polygon fill="#b20000" stroke="#b20000" stroke-width="6" points="87.25,-858.37 82,-848.37 76.75,-858.37 87.25,-858.37"></polygon>
+    <g id="a_edge1"><a xlink:title="runtime.main -> main.main (2.45s)">
+    <path fill="none" stroke="#b20000" stroke-width="6" d="M278.5,-962.66C278.5,-951.54 278.5,-936.64 278.5,-922.73"></path>
+    <polygon fill="#b20000" stroke="#b20000" stroke-width="6" points="283.75,-922.37 278.5,-912.37 273.25,-922.37 283.75,-922.37"></polygon>
     </a>
     </g>
-    <g id="a_edge1-label"><a xlink:title="runtime.main -> main.main (2.46s)">
-    <text text-anchor="middle" x="99" y="-869.8" font-family="Times,serif" font-size="14.00"> 2.46s</text>
+    <g id="a_edge1-label"><a xlink:title="runtime.main -> main.main (2.45s)">
+    <text text-anchor="middle" x="295.5" y="-933.8" font-family="Times,serif" font-size="14.00"> 2.45s</text>
     </a>
     </g>
     </g>
     <!-- N8 -->
     <g id="node8" class="node">
     <title>N8</title>
-    <g id="a_node8"><a xlink:title="github.com/ii64/gouring.(*IoUring).Submit (2.22s)">
-    <polygon fill="#edd6d5" stroke="#b20500" points="122,-722 42,-722 42,-678 122,-678 122,-722"></polygon>
-    <text text-anchor="middle" x="82" y="-711.6" font-family="Times,serif" font-size="8.00">gouring</text>
-    <text text-anchor="middle" x="82" y="-702.6" font-family="Times,serif" font-size="8.00">(*IoUring)</text>
-    <text text-anchor="middle" x="82" y="-693.6" font-family="Times,serif" font-size="8.00">Submit</text>
-    <text text-anchor="middle" x="82" y="-684.6" font-family="Times,serif" font-size="8.00">0 of 2.22s (90.24%)</text>
+    <g id="a_node8"><a xlink:title="github.com/ii64/gouring.PrepNop (0.09s)">
+    <polygon fill="#edebe8" stroke="#b2a691" points="119,-780.5 36,-780.5 36,-728.5 119,-728.5 119,-780.5"></polygon>
+    <text text-anchor="middle" x="77.5" y="-768.5" font-family="Times,serif" font-size="10.00">gouring</text>
+    <text text-anchor="middle" x="77.5" y="-757.5" font-family="Times,serif" font-size="10.00">PrepNop</text>
+    <text text-anchor="middle" x="77.5" y="-746.5" font-family="Times,serif" font-size="10.00">0.01s (0.41%)</text>
+    <text text-anchor="middle" x="77.5" y="-735.5" font-family="Times,serif" font-size="10.00">of 0.09s (3.67%)</text>
     </a>
     </g>
     </g>
     <!-- N3&#45;&gt;N8 -->
-    <g id="edge4" class="edge">
+    <g id="edge11" class="edge">
     <title>N3-&gt;N8</title>
-    <g id="a_edge4"><a xlink:title="main.main -> github.com/ii64/gouring.(*IoUring).Submit (2.22s)">
-    <path fill="none" stroke="#b20500" stroke-width="5" d="M82,-787.73C82,-770.83 82,-749.58 82,-732.35"></path>
-    <polygon fill="#b20500" stroke="#b20500" stroke-width="5" points="86.38,-732.21 82,-722.21 77.63,-732.21 86.38,-732.21"></polygon>
+    <g id="a_edge11"><a xlink:title="main.main -> github.com/ii64/gouring.PrepNop (0.09s)">
+    <path fill="none" stroke="#b2a691" d="M231.83,-864.16C212.24,-856.21 189.61,-845.87 170.5,-834 149.18,-820.76 127.61,-802.9 110.63,-787.56"></path>
+    <polygon fill="#b2a691" stroke="#b2a691" points="112.9,-784.9 103.16,-780.72 108.17,-790.06 112.9,-784.9"></polygon>
     </a>
     </g>
-    <g id="a_edge4-label"><a xlink:title="main.main -> github.com/ii64/gouring.(*IoUring).Submit (2.22s)">
-    <text text-anchor="middle" x="99" y="-751.3" font-family="Times,serif" font-size="14.00"> 2.22s</text>
+    <g id="a_edge11-label"><a xlink:title="main.main -> github.com/ii64/gouring.PrepNop (0.09s)">
+    <text text-anchor="middle" x="192.5" y="-822.8" font-family="Times,serif" font-size="14.00"> 0.09s</text>
+    <text text-anchor="middle" x="192.5" y="-807.8" font-family="Times,serif" font-size="14.00"> (inline)</text>
     </a>
     </g>
     </g>
     <!-- N9 -->
     <g id="node9" class="node">
     <title>N9</title>
-    <g id="a_node9"><a xlink:title="github.com/ii64/gouring.(*IoUring).WaitCQE (0.08s)">
-    <polygon fill="#edebe9" stroke="#b2a895" points="220.5,-722 143.5,-722 143.5,-678 220.5,-678 220.5,-722"></polygon>
-    <text text-anchor="middle" x="182" y="-711.6" font-family="Times,serif" font-size="8.00">gouring</text>
-    <text text-anchor="middle" x="182" y="-702.6" font-family="Times,serif" font-size="8.00">(*IoUring)</text>
-    <text text-anchor="middle" x="182" y="-693.6" font-family="Times,serif" font-size="8.00">WaitCQE</text>
-    <text text-anchor="middle" x="182" y="-684.6" font-family="Times,serif" font-size="8.00">0 of 0.08s (3.25%)</text>
+    <g id="a_node9"><a xlink:title="github.com/ii64/gouring.(*IoUring).GetSQE (0.08s)">
+    <polygon fill="#edebe9" stroke="#b2a895" points="220,-786 137,-786 137,-723 220,-723 220,-786"></polygon>
+    <text text-anchor="middle" x="178.5" y="-774" font-family="Times,serif" font-size="10.00">gouring</text>
+    <text text-anchor="middle" x="178.5" y="-763" font-family="Times,serif" font-size="10.00">(*IoUring)</text>
+    <text text-anchor="middle" x="178.5" y="-752" font-family="Times,serif" font-size="10.00">GetSQE</text>
+    <text text-anchor="middle" x="178.5" y="-741" font-family="Times,serif" font-size="10.00">0.01s (0.41%)</text>
+    <text text-anchor="middle" x="178.5" y="-730" font-family="Times,serif" font-size="10.00">of 0.08s (3.27%)</text>
     </a>
     </g>
     </g>
     <!-- N3&#45;&gt;N9 -->
-    <g id="edge10" class="edge">
+    <g id="edge14" class="edge">
     <title>N3-&gt;N9</title>
-    <g id="a_edge10"><a xlink:title="main.main -> github.com/ii64/gouring.(*IoUring).WaitCQE (0.08s)">
-    <path fill="none" stroke="#b2a895" d="M107.23,-787.73C122.49,-770.03 141.85,-747.57 157.06,-729.94"></path>
-    <polygon fill="#b2a895" stroke="#b2a895" points="159.84,-732.07 163.72,-722.21 154.54,-727.5 159.84,-732.07"></polygon>
+    <g id="a_edge14"><a xlink:title="main.main -> github.com/ii64/gouring.(*IoUring).GetSQE (0.08s)">
+    <path fill="none" stroke="#b2a895" d="M254.93,-851.96C250.14,-846.03 245.15,-839.82 240.5,-834 230.18,-821.09 218.97,-806.93 208.95,-794.24"></path>
+    <polygon fill="#b2a895" stroke="#b2a895" points="211.5,-791.82 202.56,-786.13 206.01,-796.15 211.5,-791.82"></polygon>
     </a>
     </g>
-    <g id="a_edge10-label"><a xlink:title="main.main -> github.com/ii64/gouring.(*IoUring).WaitCQE (0.08s)">
-    <text text-anchor="middle" x="169" y="-758.8" font-family="Times,serif" font-size="14.00"> 0.08s</text>
-    <text text-anchor="middle" x="169" y="-743.8" font-family="Times,serif" font-size="14.00"> (inline)</text>
-    </a>
-    </g>
-    </g>
-    <!-- N13 -->
-    <g id="node13" class="node">
-    <title>N13</title>
-    <g id="a_node13"><a xlink:title="github.com/ii64/gouring.PrepNop (0.06s)">
-    <polygon fill="#edecea" stroke="#b2ab9c" points="324.5,-718 247.5,-718 247.5,-682 324.5,-682 324.5,-718"></polygon>
-    <text text-anchor="middle" x="286" y="-707.1" font-family="Times,serif" font-size="8.00">gouring</text>
-    <text text-anchor="middle" x="286" y="-698.1" font-family="Times,serif" font-size="8.00">PrepNop</text>
-    <text text-anchor="middle" x="286" y="-689.1" font-family="Times,serif" font-size="8.00">0 of 0.06s (2.44%)</text>
-    </a>
-    </g>
-    </g>
-    <!-- N3&#45;&gt;N13 -->
-    <g id="edge12" class="edge">
-    <title>N3-&gt;N13</title>
-    <g id="a_edge12"><a xlink:title="main.main -> github.com/ii64/gouring.PrepNop (0.06s)">
-    <path fill="none" stroke="#b2ab9c" d="M128.62,-800.69C149.51,-792.61 174.09,-782.01 195,-770 217.6,-757.01 240.99,-739.17 258.4,-724.88"></path>
-    <polygon fill="#b2ab9c" stroke="#b2ab9c" points="260.99,-727.27 266.43,-718.18 256.51,-721.89 260.99,-727.27"></polygon>
-    </a>
-    </g>
-    <g id="a_edge12-label"><a xlink:title="main.main -> github.com/ii64/gouring.PrepNop (0.06s)">
-    <text text-anchor="middle" x="260" y="-758.8" font-family="Times,serif" font-size="14.00"> 0.06s</text>
-    <text text-anchor="middle" x="260" y="-743.8" font-family="Times,serif" font-size="14.00"> (inline)</text>
-    </a>
-    </g>
-    </g>
-    <!-- N4 -->
-    <g id="node4" class="node">
-    <title>N4</title>
-    <g id="a_node4"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uring_wait_cqe (0.08s)">
-    <polygon fill="#edebe9" stroke="#b2a895" points="238,-612 140,-612 140,-544 238,-544 238,-612"></polygon>
-    <text text-anchor="middle" x="189" y="-599.2" font-family="Times,serif" font-size="11.00">gouring</text>
-    <text text-anchor="middle" x="189" y="-587.2" font-family="Times,serif" font-size="11.00">(*IoUring)</text>
-    <text text-anchor="middle" x="189" y="-575.2" font-family="Times,serif" font-size="11.00">io_uring_wait_cqe</text>
-    <text text-anchor="middle" x="189" y="-563.2" font-family="Times,serif" font-size="11.00">0.04s (1.63%)</text>
-    <text text-anchor="middle" x="189" y="-551.2" font-family="Times,serif" font-size="11.00">of 0.08s (3.25%)</text>
-    </a>
-    </g>
-    </g>
-    <!-- N7 -->
-    <g id="node7" class="node">
-    <title>N7</title>
-    <g id="a_node7"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_peek_cqe (0.04s)">
-    <polygon fill="#edeceb" stroke="#b2aea3" points="264,-493 154,-493 154,-437 264,-437 264,-493"></polygon>
-    <text text-anchor="middle" x="209" y="-480.2" font-family="Times,serif" font-size="11.00">gouring</text>
-    <text text-anchor="middle" x="209" y="-468.2" font-family="Times,serif" font-size="11.00">(*IoUring)</text>
-    <text text-anchor="middle" x="209" y="-456.2" font-family="Times,serif" font-size="11.00">__io_uring_peek_cqe</text>
-    <text text-anchor="middle" x="209" y="-444.2" font-family="Times,serif" font-size="11.00">0.04s (1.63%)</text>
-    </a>
-    </g>
-    </g>
-    <!-- N4&#45;&gt;N7 -->
-    <g id="edge13" class="edge">
-    <title>N4-&gt;N7</title>
-    <g id="a_edge13"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uring_wait_cqe -> github.com/ii64/gouring.(*IoUring).__io_uring_peek_cqe (0.04s)">
-    <path fill="none" stroke="#b2aea3" d="M194.95,-544C197.25,-531.19 199.91,-516.46 202.28,-503.27"></path>
-    <polygon fill="#b2aea3" stroke="#b2aea3" points="205.79,-503.55 204.12,-493.09 198.9,-502.31 205.79,-503.55"></polygon>
-    </a>
-    </g>
-    <g id="a_edge13-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uring_wait_cqe -> github.com/ii64/gouring.(*IoUring).__io_uring_peek_cqe (0.04s)">
-    <text text-anchor="middle" x="218" y="-514.8" font-family="Times,serif" font-size="14.00"> 0.04s</text>
-    </a>
-    </g>
-    </g>
-    <!-- N5 -->
-    <g id="node5" class="node">
-    <title>N5</title>
-    <g id="a_node5"><a xlink:title="github.com/ii64/gouring.PrepRW (0.06s)">
-    <polygon fill="#edecea" stroke="#b2ab9c" points="334,-600 256,-600 256,-556 334,-556 334,-600"></polygon>
-    <text text-anchor="middle" x="295" y="-587.2" font-family="Times,serif" font-size="11.00">gouring</text>
-    <text text-anchor="middle" x="295" y="-575.2" font-family="Times,serif" font-size="11.00">PrepRW</text>
-    <text text-anchor="middle" x="295" y="-563.2" font-family="Times,serif" font-size="11.00">0.06s (2.44%)</text>
-    </a>
-    </g>
-    </g>
-    <!-- N6 -->
-    <g id="node6" class="node">
-    <title>N6</title>
-    <g id="a_node6"><a xlink:title="github.com/ii64/gouring.io_uring_enter2 (2.21s)">
-    <polygon fill="#edd6d5" stroke="#b20500" points="126.5,-189 37.5,-189 37.5,-137 126.5,-137 126.5,-189"></polygon>
-    <text text-anchor="middle" x="82" y="-177" font-family="Times,serif" font-size="10.00">gouring</text>
-    <text text-anchor="middle" x="82" y="-166" font-family="Times,serif" font-size="10.00">io_uring_enter2</text>
-    <text text-anchor="middle" x="82" y="-155" font-family="Times,serif" font-size="10.00">0.01s (0.41%)</text>
-    <text text-anchor="middle" x="82" y="-144" font-family="Times,serif" font-size="10.00">of 2.21s (89.84%)</text>
-    </a>
-    </g>
-    </g>
-    <!-- N6&#45;&gt;N1 -->
-    <g id="edge8" class="edge">
-    <title>N6-&gt;N1</title>
-    <g id="a_edge8"><a xlink:title="github.com/ii64/gouring.io_uring_enter2 -> syscall.RawSyscall6 (2.20s)">
-    <path fill="none" stroke="#b20500" stroke-width="5" d="M82,-136.98C82,-125.11 82,-110.46 82,-96.33"></path>
-    <polygon fill="#b20500" stroke="#b20500" stroke-width="5" points="86.38,-96.17 82,-86.17 77.63,-96.17 86.38,-96.17"></polygon>
-    </a>
-    </g>
-    <g id="a_edge8-label"><a xlink:title="github.com/ii64/gouring.io_uring_enter2 -> syscall.RawSyscall6 (2.20s)">
-    <text text-anchor="middle" x="99" y="-107.8" font-family="Times,serif" font-size="14.00"> 2.20s</text>
-    </a>
-    </g>
-    </g>
-    <!-- N12 -->
-    <g id="node12" class="node">
-    <title>N12</title>
-    <g id="a_node12"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uringn_submit (2.22s)">
-    <polygon fill="#edd6d5" stroke="#b20500" points="122,-600 42,-600 42,-556 122,-556 122,-600"></polygon>
-    <text text-anchor="middle" x="82" y="-589.6" font-family="Times,serif" font-size="8.00">gouring</text>
-    <text text-anchor="middle" x="82" y="-580.6" font-family="Times,serif" font-size="8.00">(*IoUring)</text>
-    <text text-anchor="middle" x="82" y="-571.6" font-family="Times,serif" font-size="8.00">io_uringn_submit</text>
-    <text text-anchor="middle" x="82" y="-562.6" font-family="Times,serif" font-size="8.00">0 of 2.22s (90.24%)</text>
-    </a>
-    </g>
-    </g>
-    <!-- N8&#45;&gt;N12 -->
-    <g id="edge2" class="edge">
-    <title>N8-&gt;N12</title>
-    <g id="a_edge2"><a xlink:title="github.com/ii64/gouring.(*IoUring).Submit -> github.com/ii64/gouring.(*IoUring).io_uringn_submit (2.22s)">
-    <path fill="none" stroke="#b20500" stroke-width="5" d="M82,-677.82C82,-659.17 82,-631.75 82,-610.53"></path>
-    <polygon fill="#b20500" stroke="#b20500" stroke-width="5" points="86.38,-610.37 82,-600.37 77.63,-610.37 86.38,-610.37"></polygon>
-    </a>
-    </g>
-    <g id="a_edge2-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).Submit -> github.com/ii64/gouring.(*IoUring).io_uringn_submit (2.22s)">
-    <text text-anchor="middle" x="104" y="-648.8" font-family="Times,serif" font-size="14.00"> 2.22s</text>
-    <text text-anchor="middle" x="104" y="-633.8" font-family="Times,serif" font-size="14.00"> (inline)</text>
-    </a>
-    </g>
-    </g>
-    <!-- N9&#45;&gt;N4 -->
-    <g id="edge9" class="edge">
-    <title>N9-&gt;N4</title>
-    <g id="a_edge9"><a xlink:title="github.com/ii64/gouring.(*IoUring).WaitCQE -> github.com/ii64/gouring.(*IoUring).io_uring_wait_cqe (0.08s)">
-    <path fill="none" stroke="#b2a895" d="M183.24,-677.82C184.13,-662.49 185.37,-641.24 186.47,-622.37"></path>
-    <polygon fill="#b2a895" stroke="#b2a895" points="189.98,-622.37 187.06,-612.19 182.99,-621.97 189.98,-622.37"></polygon>
-    </a>
-    </g>
-    <g id="a_edge9-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).WaitCQE -> github.com/ii64/gouring.(*IoUring).io_uring_wait_cqe (0.08s)">
-    <text text-anchor="middle" x="203" y="-641.3" font-family="Times,serif" font-size="14.00"> 0.08s</text>
-    </a>
-    </g>
-    </g>
-    <!-- N10 -->
-    <g id="node10" class="node">
-    <title>N10</title>
-    <g id="a_node10"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_submit (2.21s)">
-    <polygon fill="#edd6d5" stroke="#b20500" points="122,-386 42,-386 42,-342 122,-342 122,-386"></polygon>
-    <text text-anchor="middle" x="82" y="-375.6" font-family="Times,serif" font-size="8.00">gouring</text>
-    <text text-anchor="middle" x="82" y="-366.6" font-family="Times,serif" font-size="8.00">(*IoUring)</text>
-    <text text-anchor="middle" x="82" y="-357.6" font-family="Times,serif" font-size="8.00">__io_uring_submit</text>
-    <text text-anchor="middle" x="82" y="-348.6" font-family="Times,serif" font-size="8.00">0 of 2.21s (89.84%)</text>
-    </a>
-    </g>
-    </g>
-    <!-- N14 -->
-    <g id="node14" class="node">
-    <title>N14</title>
-    <g id="a_node14"><a xlink:title="github.com/ii64/gouring.io_uring_enter (2.21s)">
-    <polygon fill="#edd6d5" stroke="#b20500" points="122,-276 42,-276 42,-240 122,-240 122,-276"></polygon>
-    <text text-anchor="middle" x="82" y="-265.1" font-family="Times,serif" font-size="8.00">gouring</text>
-    <text text-anchor="middle" x="82" y="-256.1" font-family="Times,serif" font-size="8.00">io_uring_enter</text>
-    <text text-anchor="middle" x="82" y="-247.1" font-family="Times,serif" font-size="8.00">0 of 2.21s (89.84%)</text>
-    </a>
-    </g>
-    </g>
-    <!-- N10&#45;&gt;N14 -->
-    <g id="edge5" class="edge">
-    <title>N10-&gt;N14</title>
-    <g id="a_edge5"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_submit -> github.com/ii64/gouring.io_uring_enter (2.21s)">
-    <path fill="none" stroke="#b20500" stroke-width="5" d="M82,-341.95C82,-325.93 82,-303.74 82,-286.34"></path>
-    <polygon fill="#b20500" stroke="#b20500" stroke-width="5" points="86.38,-286.23 82,-276.23 77.63,-286.23 86.38,-286.23"></polygon>
-    </a>
-    </g>
-    <g id="a_edge5-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_submit -> github.com/ii64/gouring.io_uring_enter (2.21s)">
-    <text text-anchor="middle" x="104" y="-312.8" font-family="Times,serif" font-size="14.00"> 2.21s</text>
-    <text text-anchor="middle" x="104" y="-297.8" font-family="Times,serif" font-size="14.00"> (inline)</text>
+    <g id="a_edge14-label"><a xlink:title="main.main -> github.com/ii64/gouring.(*IoUring).GetSQE (0.08s)">
+    <text text-anchor="middle" x="257.5" y="-815.3" font-family="Times,serif" font-size="14.00"> 0.08s</text>
     </a>
     </g>
     </g>
     <!-- N11 -->
     <g id="node11" class="node">
     <title>N11</title>
-    <g id="a_node11"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_submit_and_wait (2.22s)">
-    <polygon fill="#edd6d5" stroke="#b20500" points="136,-487 28,-487 28,-443 136,-443 136,-487"></polygon>
-    <text text-anchor="middle" x="82" y="-476.6" font-family="Times,serif" font-size="8.00">gouring</text>
-    <text text-anchor="middle" x="82" y="-467.6" font-family="Times,serif" font-size="8.00">(*IoUring)</text>
-    <text text-anchor="middle" x="82" y="-458.6" font-family="Times,serif" font-size="8.00">__io_uring_submit_and_wait</text>
-    <text text-anchor="middle" x="82" y="-449.6" font-family="Times,serif" font-size="8.00">0 of 2.22s (90.24%)</text>
+    <g id="a_node11"><a xlink:title="github.com/ii64/gouring.(*IoUring).Submit (2.07s)">
+    <polygon fill="#edd6d5" stroke="#b20800" points="318.5,-776.5 238.5,-776.5 238.5,-732.5 318.5,-732.5 318.5,-776.5"></polygon>
+    <text text-anchor="middle" x="278.5" y="-766.1" font-family="Times,serif" font-size="8.00">gouring</text>
+    <text text-anchor="middle" x="278.5" y="-757.1" font-family="Times,serif" font-size="8.00">(*IoUring)</text>
+    <text text-anchor="middle" x="278.5" y="-748.1" font-family="Times,serif" font-size="8.00">Submit</text>
+    <text text-anchor="middle" x="278.5" y="-739.1" font-family="Times,serif" font-size="8.00">0 of 2.07s (84.49%)</text>
     </a>
     </g>
     </g>
-    <!-- N11&#45;&gt;N10 -->
+    <!-- N3&#45;&gt;N11 -->
+    <g id="edge4" class="edge">
+    <title>N3-&gt;N11</title>
+    <g id="a_edge4"><a xlink:title="main.main -> github.com/ii64/gouring.(*IoUring).Submit (2.07s)">
+    <path fill="none" stroke="#b20800" stroke-width="5" d="M278.5,-851.89C278.5,-832.37 278.5,-806.69 278.5,-786.74"></path>
+    <polygon fill="#b20800" stroke="#b20800" stroke-width="5" points="282.88,-786.61 278.5,-776.61 274.13,-786.61 282.88,-786.61"></polygon>
+    </a>
+    </g>
+    <g id="a_edge4-label"><a xlink:title="main.main -> github.com/ii64/gouring.(*IoUring).Submit (2.07s)">
+    <text text-anchor="middle" x="295.5" y="-815.3" font-family="Times,serif" font-size="14.00"> 2.07s</text>
+    </a>
+    </g>
+    </g>
+    <!-- N12 -->
+    <g id="node12" class="node">
+    <title>N12</title>
+    <g id="a_node12"><a xlink:title="github.com/ii64/gouring.(*IoUring).WaitCQE (0.13s)">
+    <polygon fill="#edeae6" stroke="#b29e83" points="419,-776.5 342,-776.5 342,-732.5 419,-732.5 419,-776.5"></polygon>
+    <text text-anchor="middle" x="380.5" y="-766.1" font-family="Times,serif" font-size="8.00">gouring</text>
+    <text text-anchor="middle" x="380.5" y="-757.1" font-family="Times,serif" font-size="8.00">(*IoUring)</text>
+    <text text-anchor="middle" x="380.5" y="-748.1" font-family="Times,serif" font-size="8.00">WaitCQE</text>
+    <text text-anchor="middle" x="380.5" y="-739.1" font-family="Times,serif" font-size="8.00">0 of 0.13s (5.31%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N3&#45;&gt;N12 -->
+    <g id="edge10" class="edge">
+    <title>N3-&gt;N12</title>
+    <g id="a_edge10"><a xlink:title="main.main -> github.com/ii64/gouring.(*IoUring).WaitCQE (0.13s)">
+    <path fill="none" stroke="#b29e83" d="M302.16,-851.89C318.61,-831.65 340.44,-804.79 356.88,-784.56"></path>
+    <polygon fill="#b29e83" stroke="#b29e83" points="359.75,-786.58 363.34,-776.61 354.32,-782.16 359.75,-786.58"></polygon>
+    </a>
+    </g>
+    <g id="a_edge10-label"><a xlink:title="main.main -> github.com/ii64/gouring.(*IoUring).WaitCQE (0.13s)">
+    <text text-anchor="middle" x="361.5" y="-822.8" font-family="Times,serif" font-size="14.00"> 0.13s</text>
+    <text text-anchor="middle" x="361.5" y="-807.8" font-family="Times,serif" font-size="14.00"> (inline)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N4 -->
+    <g id="node4" class="node">
+    <title>N4</title>
+    <g id="a_node4"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uring_wait_cqe (0.13s)">
+    <polygon fill="#edeae6" stroke="#b29e83" points="434.5,-657 336.5,-657 336.5,-589 434.5,-589 434.5,-657"></polygon>
+    <text text-anchor="middle" x="385.5" y="-644.2" font-family="Times,serif" font-size="11.00">gouring</text>
+    <text text-anchor="middle" x="385.5" y="-632.2" font-family="Times,serif" font-size="11.00">(*IoUring)</text>
+    <text text-anchor="middle" x="385.5" y="-620.2" font-family="Times,serif" font-size="11.00">io_uring_wait_cqe</text>
+    <text text-anchor="middle" x="385.5" y="-608.2" font-family="Times,serif" font-size="11.00">0.05s (2.04%)</text>
+    <text text-anchor="middle" x="385.5" y="-596.2" font-family="Times,serif" font-size="11.00">of 0.13s (5.31%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N5 -->
+    <g id="node5" class="node">
+    <title>N5</title>
+    <g id="a_node5"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_peek_cqe (0.08s)">
+    <polygon fill="#edebe9" stroke="#b2a895" points="470,-519 351,-519 351,-459 470,-459 470,-519"></polygon>
+    <text text-anchor="middle" x="410.5" y="-505.4" font-family="Times,serif" font-size="12.00">gouring</text>
+    <text text-anchor="middle" x="410.5" y="-492.4" font-family="Times,serif" font-size="12.00">(*IoUring)</text>
+    <text text-anchor="middle" x="410.5" y="-479.4" font-family="Times,serif" font-size="12.00">__io_uring_peek_cqe</text>
+    <text text-anchor="middle" x="410.5" y="-466.4" font-family="Times,serif" font-size="12.00">0.08s (3.27%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N4&#45;&gt;N5 -->
+    <g id="edge12" class="edge">
+    <title>N4-&gt;N5</title>
+    <g id="a_edge12"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uring_wait_cqe -> github.com/ii64/gouring.(*IoUring).__io_uring_peek_cqe (0.08s)">
+    <path fill="none" stroke="#b2a895" d="M391.81,-588.69C395.24,-570.56 399.51,-548.04 403.1,-529.08"></path>
+    <polygon fill="#b2a895" stroke="#b2a895" points="406.54,-529.73 404.96,-519.25 399.66,-528.43 406.54,-529.73"></polygon>
+    </a>
+    </g>
+    <g id="a_edge12-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uring_wait_cqe -> github.com/ii64/gouring.(*IoUring).__io_uring_peek_cqe (0.08s)">
+    <text text-anchor="middle" x="417.5" y="-552.3" font-family="Times,serif" font-size="14.00"> 0.08s</text>
+    </a>
+    </g>
+    </g>
+    <!-- N6 -->
+    <g id="node6" class="node">
+    <title>N6</title>
+    <g id="a_node6"><a xlink:title="github.com/ii64/gouring.(*IoUring)._io_uring_get_sqe (0.07s)">
+    <polygon fill="#edebe9" stroke="#b2a999" points="206,-523 109,-523 109,-455 206,-455 206,-523"></polygon>
+    <text text-anchor="middle" x="157.5" y="-510.2" font-family="Times,serif" font-size="11.00">gouring</text>
+    <text text-anchor="middle" x="157.5" y="-498.2" font-family="Times,serif" font-size="11.00">(*IoUring)</text>
+    <text text-anchor="middle" x="157.5" y="-486.2" font-family="Times,serif" font-size="11.00">_io_uring_get_sqe</text>
+    <text text-anchor="middle" x="157.5" y="-474.2" font-family="Times,serif" font-size="11.00">0.06s (2.45%)</text>
+    <text text-anchor="middle" x="157.5" y="-462.2" font-family="Times,serif" font-size="11.00">of 0.07s (2.86%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N7 -->
+    <g id="node7" class="node">
+    <title>N7</title>
+    <g id="a_node7"><a xlink:title="github.com/ii64/gouring.PrepRW (0.08s)">
+    <polygon fill="#edebe9" stroke="#b2a895" points="121.5,-651 31.5,-651 31.5,-595 121.5,-595 121.5,-651"></polygon>
+    <text text-anchor="middle" x="76.5" y="-638.2" font-family="Times,serif" font-size="11.00">gouring</text>
+    <text text-anchor="middle" x="76.5" y="-626.2" font-family="Times,serif" font-size="11.00">PrepRW</text>
+    <text text-anchor="middle" x="76.5" y="-614.2" font-family="Times,serif" font-size="11.00">0.06s (2.45%)</text>
+    <text text-anchor="middle" x="76.5" y="-602.2" font-family="Times,serif" font-size="11.00">of 0.08s (3.27%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N17 -->
+    <g id="node17" class="node">
+    <title>N17</title>
+    <g id="a_node17"><a xlink:title="github.com/ii64/gouring.(*IoUringSqe_Union2).SetAddr (0.02s)">
+    <polygon fill="#edecec" stroke="#b2b0ab" points="91,-511 0,-511 0,-467 91,-467 91,-511"></polygon>
+    <text text-anchor="middle" x="45.5" y="-500.6" font-family="Times,serif" font-size="8.00">gouring</text>
+    <text text-anchor="middle" x="45.5" y="-491.6" font-family="Times,serif" font-size="8.00">(*IoUringSqe_Union2)</text>
+    <text text-anchor="middle" x="45.5" y="-482.6" font-family="Times,serif" font-size="8.00">SetAddr</text>
+    <text text-anchor="middle" x="45.5" y="-473.6" font-family="Times,serif" font-size="8.00">0 of 0.02s (0.82%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N7&#45;&gt;N17 -->
+    <g id="edge18" class="edge">
+    <title>N7-&gt;N17</title>
+    <g id="a_edge18"><a xlink:title="github.com/ii64/gouring.PrepRW -> github.com/ii64/gouring.(*IoUringSqe_Union2).SetAddr (0.02s)">
+    <path fill="none" stroke="#b2b0ab" d="M70.15,-594.97C65.14,-573.61 58.13,-543.77 52.87,-521.36"></path>
+    <polygon fill="#b2b0ab" stroke="#b2b0ab" points="56.21,-520.28 50.51,-511.34 49.39,-521.88 56.21,-520.28"></polygon>
+    </a>
+    </g>
+    <g id="a_edge18-label"><a xlink:title="github.com/ii64/gouring.PrepRW -> github.com/ii64/gouring.(*IoUringSqe_Union2).SetAddr (0.02s)">
+    <text text-anchor="middle" x="86.5" y="-559.8" font-family="Times,serif" font-size="14.00"> 0.02s</text>
+    <text text-anchor="middle" x="86.5" y="-544.8" font-family="Times,serif" font-size="14.00"> (inline)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N8&#45;&gt;N7 -->
+    <g id="edge13" class="edge">
+    <title>N8-&gt;N7</title>
+    <g id="a_edge13"><a xlink:title="github.com/ii64/gouring.PrepNop -> github.com/ii64/gouring.PrepRW (0.08s)">
+    <path fill="none" stroke="#b2a895" d="M77.3,-728.22C77.16,-709.25 76.96,-682.96 76.79,-661.53"></path>
+    <polygon fill="#b2a895" stroke="#b2a895" points="80.29,-661.42 76.71,-651.45 73.29,-661.48 80.29,-661.42"></polygon>
+    </a>
+    </g>
+    <g id="a_edge13-label"><a xlink:title="github.com/ii64/gouring.PrepNop -> github.com/ii64/gouring.PrepRW (0.08s)">
+    <text text-anchor="middle" x="94.5" y="-686.3" font-family="Times,serif" font-size="14.00"> 0.08s</text>
+    </a>
+    </g>
+    </g>
+    <!-- N15 -->
+    <g id="node15" class="node">
+    <title>N15</title>
+    <g id="a_node15"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uring_get_sqe (0.07s)">
+    <polygon fill="#edebe9" stroke="#b2a999" points="217,-645 140,-645 140,-601 217,-601 217,-645"></polygon>
+    <text text-anchor="middle" x="178.5" y="-634.6" font-family="Times,serif" font-size="8.00">gouring</text>
+    <text text-anchor="middle" x="178.5" y="-625.6" font-family="Times,serif" font-size="8.00">(*IoUring)</text>
+    <text text-anchor="middle" x="178.5" y="-616.6" font-family="Times,serif" font-size="8.00">io_uring_get_sqe</text>
+    <text text-anchor="middle" x="178.5" y="-607.6" font-family="Times,serif" font-size="8.00">0 of 0.07s (2.86%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N9&#45;&gt;N15 -->
+    <g id="edge15" class="edge">
+    <title>N9-&gt;N15</title>
+    <g id="a_edge15"><a xlink:title="github.com/ii64/gouring.(*IoUring).GetSQE -> github.com/ii64/gouring.(*IoUring).io_uring_get_sqe (0.07s)">
+    <path fill="none" stroke="#b2a999" d="M178.5,-722.81C178.5,-702.43 178.5,-675.75 178.5,-655.26"></path>
+    <polygon fill="#b2a999" stroke="#b2a999" points="182,-655.17 178.5,-645.17 175,-655.17 182,-655.17"></polygon>
+    </a>
+    </g>
+    <g id="a_edge15-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).GetSQE -> github.com/ii64/gouring.(*IoUring).io_uring_get_sqe (0.07s)">
+    <text text-anchor="middle" x="200.5" y="-693.8" font-family="Times,serif" font-size="14.00"> 0.07s</text>
+    <text text-anchor="middle" x="200.5" y="-678.8" font-family="Times,serif" font-size="14.00"> (inline)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N10 -->
+    <g id="node10" class="node">
+    <title>N10</title>
+    <g id="a_node10"><a xlink:title="github.com/ii64/gouring.(*union64).PutUint64 (0.02s)">
+    <polygon fill="#edecec" stroke="#b2b0ab" points="87,-389 4,-389 4,-326 87,-326 87,-389"></polygon>
+    <text text-anchor="middle" x="45.5" y="-377" font-family="Times,serif" font-size="10.00">gouring</text>
+    <text text-anchor="middle" x="45.5" y="-366" font-family="Times,serif" font-size="10.00">(*union64)</text>
+    <text text-anchor="middle" x="45.5" y="-355" font-family="Times,serif" font-size="10.00">PutUint64</text>
+    <text text-anchor="middle" x="45.5" y="-344" font-family="Times,serif" font-size="10.00">0.01s (0.41%)</text>
+    <text text-anchor="middle" x="45.5" y="-333" font-family="Times,serif" font-size="10.00">of 0.02s (0.82%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N16 -->
+    <g id="node16" class="node">
+    <title>N16</title>
+    <g id="a_node16"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uringn_submit (2.07s)">
+    <polygon fill="#edd6d5" stroke="#b20800" points="318.5,-645 238.5,-645 238.5,-601 318.5,-601 318.5,-645"></polygon>
+    <text text-anchor="middle" x="278.5" y="-634.6" font-family="Times,serif" font-size="8.00">gouring</text>
+    <text text-anchor="middle" x="278.5" y="-625.6" font-family="Times,serif" font-size="8.00">(*IoUring)</text>
+    <text text-anchor="middle" x="278.5" y="-616.6" font-family="Times,serif" font-size="8.00">io_uringn_submit</text>
+    <text text-anchor="middle" x="278.5" y="-607.6" font-family="Times,serif" font-size="8.00">0 of 2.07s (84.49%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N11&#45;&gt;N16 -->
+    <g id="edge2" class="edge">
+    <title>N11-&gt;N16</title>
+    <g id="a_edge2"><a xlink:title="github.com/ii64/gouring.(*IoUring).Submit -> github.com/ii64/gouring.(*IoUring).io_uringn_submit (2.07s)">
+    <path fill="none" stroke="#b20800" stroke-width="5" d="M278.5,-732.41C278.5,-711.52 278.5,-679.3 278.5,-655.41"></path>
+    <polygon fill="#b20800" stroke="#b20800" stroke-width="5" points="282.88,-655.09 278.5,-645.09 274.13,-655.09 282.88,-655.09"></polygon>
+    </a>
+    </g>
+    <g id="a_edge2-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).Submit -> github.com/ii64/gouring.(*IoUring).io_uringn_submit (2.07s)">
+    <text text-anchor="middle" x="300.5" y="-693.8" font-family="Times,serif" font-size="14.00"> 2.07s</text>
+    <text text-anchor="middle" x="300.5" y="-678.8" font-family="Times,serif" font-size="14.00"> (inline)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N12&#45;&gt;N4 -->
+    <g id="edge9" class="edge">
+    <title>N12-&gt;N4</title>
+    <g id="a_edge9"><a xlink:title="github.com/ii64/gouring.(*IoUring).WaitCQE -> github.com/ii64/gouring.(*IoUring).io_uring_wait_cqe (0.13s)">
+    <path fill="none" stroke="#b29e83" d="M381.31,-732.41C381.99,-714.83 382.98,-689.23 383.83,-667.32"></path>
+    <polygon fill="#b29e83" stroke="#b29e83" points="387.33,-667.36 384.22,-657.24 380.33,-667.09 387.33,-667.36"></polygon>
+    </a>
+    </g>
+    <g id="a_edge9-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).WaitCQE -> github.com/ii64/gouring.(*IoUring).io_uring_wait_cqe (0.13s)">
+    <text text-anchor="middle" x="400.5" y="-686.3" font-family="Times,serif" font-size="14.00"> 0.13s</text>
+    </a>
+    </g>
+    </g>
+    <!-- N13 -->
+    <g id="node13" class="node">
+    <title>N13</title>
+    <g id="a_node13"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_submit (2.06s)">
+    <polygon fill="#edd6d5" stroke="#b20900" points="318.5,-379.5 238.5,-379.5 238.5,-335.5 318.5,-335.5 318.5,-379.5"></polygon>
+    <text text-anchor="middle" x="278.5" y="-369.1" font-family="Times,serif" font-size="8.00">gouring</text>
+    <text text-anchor="middle" x="278.5" y="-360.1" font-family="Times,serif" font-size="8.00">(*IoUring)</text>
+    <text text-anchor="middle" x="278.5" y="-351.1" font-family="Times,serif" font-size="8.00">__io_uring_submit</text>
+    <text text-anchor="middle" x="278.5" y="-342.1" font-family="Times,serif" font-size="8.00">0 of 2.06s (84.08%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N18 -->
+    <g id="node18" class="node">
+    <title>N18</title>
+    <g id="a_node18"><a xlink:title="github.com/ii64/gouring.io_uring_enter (2.06s)">
+    <polygon fill="#edd6d5" stroke="#b20900" points="318.5,-260 238.5,-260 238.5,-224 318.5,-224 318.5,-260"></polygon>
+    <text text-anchor="middle" x="278.5" y="-249.1" font-family="Times,serif" font-size="8.00">gouring</text>
+    <text text-anchor="middle" x="278.5" y="-240.1" font-family="Times,serif" font-size="8.00">io_uring_enter</text>
+    <text text-anchor="middle" x="278.5" y="-231.1" font-family="Times,serif" font-size="8.00">0 of 2.06s (84.08%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N13&#45;&gt;N18 -->
+    <g id="edge5" class="edge">
+    <title>N13-&gt;N18</title>
+    <g id="a_edge5"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_submit -> github.com/ii64/gouring.io_uring_enter (2.06s)">
+    <path fill="none" stroke="#b20900" stroke-width="5" d="M278.5,-335.42C278.5,-317.05 278.5,-290.3 278.5,-270.3"></path>
+    <polygon fill="#b20900" stroke="#b20900" stroke-width="5" points="282.88,-270.26 278.5,-260.26 274.13,-270.26 282.88,-270.26"></polygon>
+    </a>
+    </g>
+    <g id="a_edge5-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_submit -> github.com/ii64/gouring.io_uring_enter (2.06s)">
+    <text text-anchor="middle" x="300.5" y="-296.8" font-family="Times,serif" font-size="14.00"> 2.06s</text>
+    <text text-anchor="middle" x="300.5" y="-281.8" font-family="Times,serif" font-size="14.00"> (inline)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N14 -->
+    <g id="node14" class="node">
+    <title>N14</title>
+    <g id="a_node14"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_submit_and_wait (2.07s)">
+    <polygon fill="#edd6d5" stroke="#b20800" points="332.5,-511 224.5,-511 224.5,-467 332.5,-467 332.5,-511"></polygon>
+    <text text-anchor="middle" x="278.5" y="-500.6" font-family="Times,serif" font-size="8.00">gouring</text>
+    <text text-anchor="middle" x="278.5" y="-491.6" font-family="Times,serif" font-size="8.00">(*IoUring)</text>
+    <text text-anchor="middle" x="278.5" y="-482.6" font-family="Times,serif" font-size="8.00">__io_uring_submit_and_wait</text>
+    <text text-anchor="middle" x="278.5" y="-473.6" font-family="Times,serif" font-size="8.00">0 of 2.07s (84.49%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N14&#45;&gt;N13 -->
     <g id="edge6" class="edge">
-    <title>N11-&gt;N10</title>
-    <g id="a_edge6"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_submit_and_wait -> github.com/ii64/gouring.(*IoUring).__io_uring_submit (2.21s)">
-    <path fill="none" stroke="#b20500" stroke-width="5" d="M82,-442.52C82,-429.06 82,-411.49 82,-396.48"></path>
-    <polygon fill="#b20500" stroke="#b20500" stroke-width="5" points="86.38,-396.1 82,-386.1 77.63,-396.1 86.38,-396.1"></polygon>
+    <title>N14-&gt;N13</title>
+    <g id="a_edge6"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_submit_and_wait -> github.com/ii64/gouring.(*IoUring).__io_uring_submit (2.06s)">
+    <path fill="none" stroke="#b20900" stroke-width="5" d="M278.5,-466.91C278.5,-446.02 278.5,-413.8 278.5,-389.91"></path>
+    <polygon fill="#b20900" stroke="#b20900" stroke-width="5" points="282.88,-389.59 278.5,-379.59 274.13,-389.59 282.88,-389.59"></polygon>
     </a>
     </g>
-    <g id="a_edge6-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_submit_and_wait -> github.com/ii64/gouring.(*IoUring).__io_uring_submit (2.21s)">
-    <text text-anchor="middle" x="99" y="-407.8" font-family="Times,serif" font-size="14.00"> 2.21s</text>
+    <g id="a_edge6-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).__io_uring_submit_and_wait -> github.com/ii64/gouring.(*IoUring).__io_uring_submit (2.06s)">
+    <text text-anchor="middle" x="295.5" y="-418.3" font-family="Times,serif" font-size="14.00"> 2.06s</text>
     </a>
     </g>
     </g>
-    <!-- N12&#45;&gt;N11 -->
+    <!-- N15&#45;&gt;N6 -->
+    <g id="edge16" class="edge">
+    <title>N15-&gt;N6</title>
+    <g id="a_edge16"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uring_get_sqe -> github.com/ii64/gouring.(*IoUring)._io_uring_get_sqe (0.07s)">
+    <path fill="none" stroke="#b2a999" d="M175.13,-600.79C172.23,-582.59 167.97,-555.78 164.36,-533.1"></path>
+    <polygon fill="#b2a999" stroke="#b2a999" points="167.78,-532.34 162.75,-523.01 160.87,-533.44 167.78,-532.34"></polygon>
+    </a>
+    </g>
+    <g id="a_edge16-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uring_get_sqe -> github.com/ii64/gouring.(*IoUring)._io_uring_get_sqe (0.07s)">
+    <text text-anchor="middle" x="192.5" y="-559.8" font-family="Times,serif" font-size="14.00"> 0.07s</text>
+    <text text-anchor="middle" x="192.5" y="-544.8" font-family="Times,serif" font-size="14.00"> (inline)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N16&#45;&gt;N14 -->
     <g id="edge3" class="edge">
-    <title>N12-&gt;N11</title>
-    <g id="a_edge3"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uringn_submit -> github.com/ii64/gouring.(*IoUring).__io_uring_submit_and_wait (2.22s)">
-    <path fill="none" stroke="#b20500" stroke-width="5" d="M82,-555.86C82,-539.27 82,-515.93 82,-497.2"></path>
-    <polygon fill="#b20500" stroke="#b20500" stroke-width="5" points="86.38,-497.06 82,-487.06 77.63,-497.06 86.38,-497.06"></polygon>
+    <title>N16-&gt;N14</title>
+    <g id="a_edge3"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uringn_submit -> github.com/ii64/gouring.(*IoUring).__io_uring_submit_and_wait (2.07s)">
+    <path fill="none" stroke="#b20800" stroke-width="5" d="M278.5,-600.79C278.5,-579.33 278.5,-545.92 278.5,-521.39"></path>
+    <polygon fill="#b20800" stroke="#b20800" stroke-width="5" points="282.88,-521.16 278.5,-511.16 274.13,-521.16 282.88,-521.16"></polygon>
     </a>
     </g>
-    <g id="a_edge3-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uringn_submit -> github.com/ii64/gouring.(*IoUring).__io_uring_submit_and_wait (2.22s)">
-    <text text-anchor="middle" x="99" y="-514.8" font-family="Times,serif" font-size="14.00"> 2.22s</text>
-    </a>
-    </g>
-    </g>
-    <!-- N13&#45;&gt;N5 -->
-    <g id="edge11" class="edge">
-    <title>N13-&gt;N5</title>
-    <g id="a_edge11"><a xlink:title="github.com/ii64/gouring.PrepNop -> github.com/ii64/gouring.PrepRW (0.06s)">
-    <path fill="none" stroke="#b2ab9c" d="M287.29,-681.81C288.68,-663.23 290.93,-633.24 292.64,-610.43"></path>
-    <polygon fill="#b2ab9c" stroke="#b2ab9c" points="296.15,-610.44 293.41,-600.21 289.17,-609.92 296.15,-610.44"></polygon>
-    </a>
-    </g>
-    <g id="a_edge11-label"><a xlink:title="github.com/ii64/gouring.PrepNop -> github.com/ii64/gouring.PrepRW (0.06s)">
-    <text text-anchor="middle" x="308" y="-641.3" font-family="Times,serif" font-size="14.00"> 0.06s</text>
+    <g id="a_edge3-label"><a xlink:title="github.com/ii64/gouring.(*IoUring).io_uringn_submit -> github.com/ii64/gouring.(*IoUring).__io_uring_submit_and_wait (2.07s)">
+    <text text-anchor="middle" x="295.5" y="-552.3" font-family="Times,serif" font-size="14.00"> 2.07s</text>
     </a>
     </g>
     </g>
-    <!-- N14&#45;&gt;N6 -->
+    <!-- N17&#45;&gt;N10 -->
+    <g id="edge17" class="edge">
+    <title>N17-&gt;N10</title>
+    <g id="a_edge17"><a xlink:title="github.com/ii64/gouring.(*IoUringSqe_Union2).SetAddr -> github.com/ii64/gouring.(*union64).PutUint64 (0.02s)">
+    <path fill="none" stroke="#b2b0ab" d="M45.5,-466.91C45.5,-448.72 45.5,-421.92 45.5,-399.52"></path>
+    <polygon fill="#b2b0ab" stroke="#b2b0ab" points="49,-399.26 45.5,-389.26 42,-399.26 49,-399.26"></polygon>
+    </a>
+    </g>
+    <g id="a_edge17-label"><a xlink:title="github.com/ii64/gouring.(*IoUringSqe_Union2).SetAddr -> github.com/ii64/gouring.(*union64).PutUint64 (0.02s)">
+    <text text-anchor="middle" x="67.5" y="-425.8" font-family="Times,serif" font-size="14.00"> 0.02s</text>
+    <text text-anchor="middle" x="67.5" y="-410.8" font-family="Times,serif" font-size="14.00"> (inline)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N19 -->
+    <g id="node19" class="node">
+    <title>N19</title>
+    <g id="a_node19"><a xlink:title="github.com/ii64/gouring.io_uring_enter2 (2.06s)">
+    <polygon fill="#edd6d5" stroke="#b20900" points="318.5,-173 238.5,-173 238.5,-137 318.5,-137 318.5,-173"></polygon>
+    <text text-anchor="middle" x="278.5" y="-162.1" font-family="Times,serif" font-size="8.00">gouring</text>
+    <text text-anchor="middle" x="278.5" y="-153.1" font-family="Times,serif" font-size="8.00">io_uring_enter2</text>
+    <text text-anchor="middle" x="278.5" y="-144.1" font-family="Times,serif" font-size="8.00">0 of 2.06s (84.08%)</text>
+    </a>
+    </g>
+    </g>
+    <!-- N18&#45;&gt;N19 -->
     <g id="edge7" class="edge">
-    <title>N14-&gt;N6</title>
-    <g id="a_edge7"><a xlink:title="github.com/ii64/gouring.io_uring_enter -> github.com/ii64/gouring.io_uring_enter2 (2.21s)">
-    <path fill="none" stroke="#b20500" stroke-width="5" d="M82,-239.94C82,-228.58 82,-213.22 82,-199.3"></path>
-    <polygon fill="#b20500" stroke="#b20500" stroke-width="5" points="86.38,-199.01 82,-189.01 77.63,-199.01 86.38,-199.01"></polygon>
+    <title>N18-&gt;N19</title>
+    <g id="a_edge7"><a xlink:title="github.com/ii64/gouring.io_uring_enter -> github.com/ii64/gouring.io_uring_enter2 (2.06s)">
+    <path fill="none" stroke="#b20900" stroke-width="5" d="M278.5,-223.8C278.5,-212.16 278.5,-196.55 278.5,-183.24"></path>
+    <polygon fill="#b20900" stroke="#b20900" stroke-width="5" points="282.88,-183.18 278.5,-173.18 274.13,-183.18 282.88,-183.18"></polygon>
     </a>
     </g>
-    <g id="a_edge7-label"><a xlink:title="github.com/ii64/gouring.io_uring_enter -> github.com/ii64/gouring.io_uring_enter2 (2.21s)">
-    <text text-anchor="middle" x="99" y="-210.8" font-family="Times,serif" font-size="14.00"> 2.21s</text>
+    <g id="a_edge7-label"><a xlink:title="github.com/ii64/gouring.io_uring_enter -> github.com/ii64/gouring.io_uring_enter2 (2.06s)">
+    <text text-anchor="middle" x="295.5" y="-194.8" font-family="Times,serif" font-size="14.00"> 2.06s</text>
+    </a>
+    </g>
+    </g>
+    <!-- N19&#45;&gt;N1 -->
+    <g id="edge8" class="edge">
+    <title>N19-&gt;N1</title>
+    <g id="a_edge8"><a xlink:title="github.com/ii64/gouring.io_uring_enter2 -> syscall.RawSyscall6 (2.06s)">
+    <path fill="none" stroke="#b20900" stroke-width="5" d="M278.5,-136.81C278.5,-125.82 278.5,-110.91 278.5,-96.26"></path>
+    <polygon fill="#b20900" stroke="#b20900" stroke-width="5" points="282.88,-96.21 278.5,-86.21 274.13,-96.21 282.88,-96.21"></polygon>
+    </a>
+    </g>
+    <g id="a_edge8-label"><a xlink:title="github.com/ii64/gouring.io_uring_enter2 -> syscall.RawSyscall6 (2.06s)">
+    <text text-anchor="middle" x="295.5" y="-107.8" font-family="Times,serif" font-size="14.00"> 2.06s</text>
     </a>
     </g>
     </g>

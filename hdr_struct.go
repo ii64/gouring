@@ -2,7 +2,7 @@ package gouring
 
 import "unsafe"
 
-var (
+const (
 	SizeofUnsigned   = unsafe.Sizeof(uint32(0))
 	SizeofUint32     = unsafe.Sizeof(uint32(0))
 	SizeofIoUringSqe = unsafe.Sizeof(IoUringSqe{})

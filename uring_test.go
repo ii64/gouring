@@ -9,6 +9,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type genericTestingT interface {
+	assert.TestingT
+	require.TestingT
+}
+
+func testNewIoUring(t genericTestingT, entries uint32, flags uint32) *IoUring {
+	h, err := New(entries, flags)
+	require.NoError(t, err)
+	require.NotNil(t, h)
+	return h
+}
+
+func testNewIoUringWithParam(t genericTestingT, entries uint32, p *IoUringParams) *IoUring {
+	h, err := NewWithParams(entries, p)
+	require.NoError(t, err)
+	require.NotNil(t, h)
+	return h
+}
+
 func TestRingWrapper(t *testing.T) {
 	h := testNewIoUring(t, 256, 0)
 	defer h.Close()

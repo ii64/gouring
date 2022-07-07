@@ -5,11 +5,11 @@ import (
 	"unsafe"
 )
 
-func io_uring_queue_init(entries uint32, ring *IoUring, flags uint32) error {
-	p := new(IoUringParams)
-	p.Flags = flags
-	return io_uring_queue_init_params(entries, ring, p)
-}
+// func io_uring_queue_init(entries uint32, ring *IoUring, flags uint32) error {
+// 	p := new(IoUringParams)
+// 	p.Flags = flags
+// 	return io_uring_queue_init_params(entries, ring, p)
+// }
 
 func io_uring_queue_init_params(entries uint32, ring *IoUring, p *IoUringParams) error {
 	fd, err := io_uring_setup(entries, p)
@@ -46,11 +46,11 @@ func (ring *IoUring) io_uring_queue_exit() {
 func io_uring_queue_mmap(fd int, p *IoUringParams, ring *IoUring) error {
 	err := io_uring_mmap(fd, p, &ring.Sq, &ring.Cq)
 	if err != nil {
-		ring.Flags = p.Flags
-		ring.RingFd = ring.EnterRingFd
-		ring.IntFlags = 0
 		return err
 	}
+	ring.Flags = p.Flags
+	ring.RingFd, ring.EnterRingFd = int32(fd), int32(fd)
+	ring.IntFlags = 0
 	return nil
 }
 

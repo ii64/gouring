@@ -327,7 +327,8 @@ type IoUringCqe struct {
 	 * contains 16-bytes of padding, doubling the size of the CQE.
 	 */
 	//  __u64 big_cqe[];
-	BigCqe *uint64 // ptr arith
+
+	// 8+4+4 == 16 , correct
 }
 
 /*

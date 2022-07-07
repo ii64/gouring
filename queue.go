@@ -426,3 +426,46 @@ func (ring *IoUring) io_uring_cq_advance(nr uint32) {
 		atomic.StoreUint32(ring.Cq.Head, *ring.Cq.Head+nr)
 	}
 }
+
+/*
+ * Return an IO completion, waiting for 'wait_nr' completions if one isn't
+ * readily available. Returns 0 with cqe_ptr filled in on success, -errno on
+ * failure.
+ */
+func (ring *IoUring) io_uring_wait_cqe_nr(cqePtr **IoUringCqe, waitNr uint32) error {
+	return ring.__io_uring_get_cqe(cqePtr, 0, waitNr, nil)
+}
+
+/*
+ * Return an IO completion, if one is readily available. Returns 0 with
+ * cqe_ptr filled in on success, -errno on failure.
+ */
+func (ring *IoUring) io_uring_peek_cqe(cqePtr **IoUringCqe) error {
+	err := ring.__io_uring_peek_cqe(cqePtr, nil)
+	if err == nil && *cqePtr != nil {
+		return nil
+	}
+	return ring.io_uring_wait_cqe_nr(cqePtr, 0)
+}
+
+/*
+ * Return an IO completion, waiting for it if necessary. Returns 0 with
+ * cqe_ptr filled in on success, -errno on failure.
+ */
+func (ring *IoUring) io_uring_wait_cqe(cqePtr **IoUringCqe) error {
+	err := ring.__io_uring_peek_cqe(cqePtr, nil)
+	if err == nil && *cqePtr != nil {
+		return nil
+	}
+	return ring.io_uring_wait_cqe_nr(cqePtr, 1)
+}
+
+/*
+ * Must be called after io_uring_{peek,wait}_cqe() after the cqe has
+ * been processed by the application.
+ */
+func (ring *IoUring) io_uring_cqe_seen(cqe *IoUringCqe) {
+	if cqe != nil {
+		ring.io_uring_cq_advance(1)
+	}
+}

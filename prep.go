@@ -31,6 +31,9 @@ func PrepTimeout(sqe *IoUringSqe, ts *syscall.Timespec, count uint32, flags uint
 	sqe.SetTimeoutFlags(flags)
 }
 
+func PrepRead(sqe *IoUringSqe, fd int, buf *byte, nb int, offset uint64) {
+	PrepRW(IORING_OP_READ, sqe, fd, unsafe.Pointer(buf), nb, offset)
+}
 func PrepReadv(sqe *IoUringSqe, fd int,
 	iov *syscall.Iovec, nrVecs int,
 	offset uint64) {
@@ -43,6 +46,9 @@ func PrepReadv2(sqe *IoUringSqe, fd int,
 	sqe.SetRwFlags(flags)
 }
 
+func PrepWrite(sqe *IoUringSqe, fd int, buf *byte, nb int, offset uint64) {
+	PrepRW(IORING_OP_WRITE, sqe, fd, unsafe.Pointer(buf), nb, offset)
+}
 func PrepWritev(sqe *IoUringSqe, fd int,
 	iov *syscall.Iovec, nrVecs int,
 	offset uint64) {

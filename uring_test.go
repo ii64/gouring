@@ -21,7 +21,7 @@ func testNewIoUring(t genericTestingT, entries uint32, flags uint32) *IoUring {
 	return h
 }
 
-func testNewIoUringWithParam(t genericTestingT, entries uint32, p *IoUringParams) *IoUring {
+func testNewIoUringWithParams(t genericTestingT, entries uint32, p *IoUringParams) *IoUring {
 	h, err := NewWithParams(entries, p)
 	require.NoError(t, err)
 	require.NotNil(t, h)
@@ -45,7 +45,7 @@ func TestRingWrapper(t *testing.T) {
 	}
 	var off uint64 = 0
 	for _, bs := range whatToWrite {
-		sqe := h.GetSQE()
+		sqe := h.GetSqe()
 		PrepWrite(sqe, int(fd), &bs[0], len(bs), off)
 		sqe.Flags = IOSQE_IO_LINK
 		off = off + uint64(len(bs))

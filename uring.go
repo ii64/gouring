@@ -13,6 +13,9 @@ func New(entries uint32, flags uint32) (*IoUring, error) {
 
 func NewWithParams(entries uint32, params *IoUringParams) (*IoUring, error) {
 	ring := &IoUring{}
+	if params == nil {
+		params = new(IoUringParams)
+	}
 	err := io_uring_queue_init_params(entries, ring, params)
 	if err != nil {
 		return nil, err
@@ -24,12 +27,16 @@ func (h *IoUring) Close() {
 	h.io_uring_queue_exit()
 }
 
-func (h *IoUring) GetSQE() *IoUringSqe {
+func (h *IoUring) GetSqe() *IoUringSqe {
 	return h.io_uring_get_sqe()
 }
 
-func (h *IoUring) WaitCQE(cqePtr **IoUringCqe) error {
+func (h *IoUring) WaitCqe(cqePtr **IoUringCqe) error {
 	return h.io_uring_wait_cqe(cqePtr)
+}
+
+func (h *IoUring) SeenCqe(cqe *IoUringCqe) {
+	h.io_uring_cqe_seen(cqe)
 }
 
 func (h *IoUring) Submit() (int, error) {

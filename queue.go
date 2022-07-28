@@ -1,6 +1,7 @@
 package gouring
 
 import (
+	"runtime"
 	"sync/atomic"
 	"syscall"
 	"unsafe"
@@ -20,7 +21,7 @@ func (ring *IoUring) sq_ring_needs_enter(flags *uint32) bool {
 
 	// FIXME: io_uring_smp_mb
 
-	if atomic.LoadUint32(ring.Sq.Flags)&IORING_SQ_NEED_WAKEUP != 0 {
+	if atomic.LoadUint32(ring.Sq._Flags())&IORING_SQ_NEED_WAKEUP != 0 {
 		*flags |= IORING_ENTER_SQ_WAKEUP
 		return true
 	}
@@ -28,7 +29,7 @@ func (ring *IoUring) sq_ring_needs_enter(flags *uint32) bool {
 }
 
 func (ring *IoUring) cq_ring_needs_flush() bool {
-	return atomic.LoadUint32(ring.Sq.Flags)&(IORING_SQ_CQ_OVERFLOW|IORING_SQ_TASKRUN) != 0
+	return atomic.LoadUint32(ring.Sq._Flags())&(IORING_SQ_CQ_OVERFLOW|IORING_SQ_TASKRUN) != 0
 }
 
 func (ring *IoUring) cq_ring_needs_enter() bool {
@@ -80,7 +81,7 @@ func (ring *IoUring) _io_uring_get_cqe(cqePtr **IoUringCqe, data *get_data) (err
 		if err != nil {
 			break
 		}
-		data.submit = data.submit - uint32(ret)
+		data.submit -= uint32(ret)
 		if cqe != nil {
 			break
 		}
@@ -117,8 +118,8 @@ func (ring *IoUring) io_uring_peek_batch_cqe(cqes []*IoUringCqe, count uint32) u
 again:
 	ready = ring.io_uring_cq_ready()
 	if ready > 0 {
-		var head = *ring.Cq.Head
-		var mask = *ring.Cq.RingMask
+		var head = *ring.Cq._Head()
+		var mask = *ring.Cq._RingMask()
 		var last uint32
 		if count > ready {
 			count = ready
@@ -157,8 +158,8 @@ done:
  */
 func (ring *IoUring) __io_uring_flush_sq() uint32 {
 	sq := &ring.Sq
-	var mask = *sq.RingMask
-	var ktail = *sq.Tail
+	var mask = *sq._RingMask()
+	var ktail = *sq._Tail()
 	var toSubmit = sq.SqeTail - sq.SqeHead
 
 	if toSubmit < 1 {
@@ -178,7 +179,7 @@ func (ring *IoUring) __io_uring_flush_sq() uint32 {
 	 * Ensure that the kernel sees the SQE updates before it sees the tail
 	 * update.
 	 */
-	atomic.StoreUint32(sq.Tail, ktail)
+	atomic.StoreUint32(sq._Tail(), ktail)
 
 out:
 	/*
@@ -192,7 +193,7 @@ out:
 	 * we can submit. The point is, we need to be able to deal with this
 	 * situation regardless of any perceived atomicity.
 	 */
-	return ktail - *sq.Head
+	return ktail - *sq._Head()
 }
 
 /*
@@ -245,7 +246,7 @@ func (ring *IoUring) __io_uring_submit_timeout(waitNr uint32, ts *syscall.Timesp
 	}
 
 	PrepTimeout(sqe, ts, waitNr, 0)
-	sqe.UserData = LIBURING_UDATA_TIMEOUT
+	sqe.UserData.SetUint64(LIBURING_UDATA_TIMEOUT)
 	ret = int(ring.__io_uring_flush_sq())
 	return
 }
@@ -355,7 +356,7 @@ func (ring *IoUring) io_uring_get_sqe() *IoUringSqe {
  */
 func (ring *IoUring) _io_uring_get_sqe() (sqe *IoUringSqe) {
 	sq := &ring.Sq
-	var head = atomic.LoadUint32(sq.Head)
+	var head = atomic.LoadUint32(sq._Head())
 	var next = sq.SqeTail + 1
 	var shift uint32 = 0
 
@@ -363,8 +364,8 @@ func (ring *IoUring) _io_uring_get_sqe() (sqe *IoUringSqe) {
 		shift = 1
 	}
 
-	if next-head <= *sq.RingEntries {
-		sqe = ioUringSqeArray_Index(sq.Sqes, uintptr((sq.SqeTail&*sq.RingMask)<<shift))
+	if next-head <= *sq._RingEntries() {
+		sqe = ioUringSqeArray_Index(sq.Sqes, uintptr((sq.SqeTail&*sq._RingMask())<<shift))
 		sq.SqeTail = next
 		return
 	}
@@ -374,14 +375,15 @@ func (ring *IoUring) _io_uring_get_sqe() (sqe *IoUringSqe) {
 }
 
 func (ring *IoUring) io_uring_cq_ready() uint32 {
-	return atomic.LoadUint32(ring.Cq.Tail) - *ring.Cq.Head
+	return atomic.LoadUint32(ring.Cq._Tail()) - *ring.Cq._Head()
 }
 
 func (ring *IoUring) __io_uring_peek_cqe(cqePtr **IoUringCqe, nrAvail *uint32) error {
 	var cqe *IoUringCqe
 	var err int32 = 0
 	var avail int
-	var mask = *ring.Cq.RingMask
+
+	var mask = *ring.Cq._RingMask()
 	var shift uint32 = 0
 
 	if ring.Flags&IORING_SETUP_CQE32 != 0 {
@@ -389,9 +391,10 @@ func (ring *IoUring) __io_uring_peek_cqe(cqePtr **IoUringCqe, nrAvail *uint32) e
 	}
 
 	for {
-		var tail = atomic.LoadUint32(ring.Cq.Tail)
-		var head = *ring.Cq.Head
+		var tail = atomic.LoadUint32(ring.Cq._Tail())
+		var head = *ring.Cq._Head()
 
+		cqe = nil
 		avail = int(tail - head)
 		if avail < 1 {
 			break
@@ -399,12 +402,14 @@ func (ring *IoUring) __io_uring_peek_cqe(cqePtr **IoUringCqe, nrAvail *uint32) e
 
 		cqe = ioUringCqeArray_Index(ring.Cq.Cqes, uintptr((head&mask)<<shift))
 		if ring.Features&IORING_FEAT_EXT_ARG == 0 &&
-			cqe.UserData == LIBURING_UDATA_TIMEOUT {
+			cqe.UserData.GetUint64() == LIBURING_UDATA_TIMEOUT {
 			if cqe.Res < 0 {
 				err = cqe.Res
 			}
 			ring.io_uring_cq_advance(1)
-			if err != 0 {
+			if err == 0 {
+				// yields G
+				runtime.Gosched()
 				continue
 			}
 			cqe = nil
@@ -425,7 +430,7 @@ func (ring *IoUring) __io_uring_peek_cqe(cqePtr **IoUringCqe, nrAvail *uint32) e
 
 func (ring *IoUring) io_uring_cq_advance(nr uint32) {
 	if nr > 0 {
-		atomic.StoreUint32(ring.Cq.Head, *ring.Cq.Head+nr)
+		atomic.StoreUint32(ring.Cq._Head(), *ring.Cq._Head()+nr)
 	}
 }
 

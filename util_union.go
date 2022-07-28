@@ -50,38 +50,3 @@ func (u *union16) Uint64() uint64         { return *(*uint64)(unsafe.Pointer(u))
 func (u *union16) Uint32() uint32         { return *(*uint32)(unsafe.Pointer(u)) }
 func (u *union16) Uint16() uint16         { return *(*uint16)(unsafe.Pointer(u)) }
 func (u *union16) Uint8() uint8           { return *(*uint8)(unsafe.Pointer(u)) }
-
-//
-
-func putUnsafe(ptr unsafe.Pointer, v unsafe.Pointer) {
-	*(*unsafe.Pointer)(ptr) = v
-}
-
-func putUintptr(ptr unsafe.Pointer, v uintptr) {
-	*(*uintptr)(ptr) = v
-}
-func putUint64(ptr unsafe.Pointer, v uint64) {
-	*(*uint64)(ptr) = v
-}
-func putUint32(ptr unsafe.Pointer, v uint32) {
-	*(*uint32)(ptr) = v
-}
-func putUint16(ptr unsafe.Pointer, v uint16) {
-	*(*uint16)(ptr) = v
-}
-func putUint8(ptr unsafe.Pointer, v uint8) {
-	*(*uint8)(ptr) = v
-}
-
-func putInt64(ptr unsafe.Pointer, v int64) {
-	*(*int64)(ptr) = v
-}
-func putInt32(ptr unsafe.Pointer, v int32) {
-	*(*int32)(ptr) = v
-}
-func putInt16(ptr unsafe.Pointer, v int16) {
-	*(*int16)(ptr) = v
-}
-func putInt8(ptr unsafe.Pointer, v int8) {
-	*(*int8)(ptr) = v
-}

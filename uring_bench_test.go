@@ -26,7 +26,7 @@ func BenchmarkQueueNop(b *testing.B) {
 			if ctx.Err() != nil {
 				return
 			}
-			err = h.WaitCQE(&cqe)
+			err = h.WaitCqe(&cqe)
 			if err == syscall.EINTR {
 				continue // ignore INTR
 			} else if err != nil {
@@ -35,12 +35,14 @@ func BenchmarkQueueNop(b *testing.B) {
 			if cqe.Res < 0 {
 				panic(syscall.Errno(-cqe.Res))
 			}
+
+			h.SeenCqe(cqe)
 		}
 	}
 
 	for _, tc := range ts {
 		b.Run(tc.name, func(b *testing.B) {
-			h := testNewIoUringWithParam(b, tc.entries, &tc.p)
+			h := testNewIoUringWithParams(b, tc.entries, &tc.p)
 			defer h.Close()
 			var (
 				j         uint32
@@ -57,14 +59,14 @@ func BenchmarkQueueNop(b *testing.B) {
 				for j = 0; j < tc.entries; j++ {
 					for {
 						// sqe could be nil if SQ is already full so we spin until we got one
-						sqe = h.GetSQE()
+						sqe = h.GetSqe()
 						if sqe != nil {
 							break
 						}
 						runtime.Gosched()
 					}
 					PrepNop(sqe)
-					sqe.UserData = uint64(i + int(j))
+					sqe.UserData.SetUint64(uint64(i + int(j)))
 				}
 				submitted, err = h.Submit()
 				if err != nil {

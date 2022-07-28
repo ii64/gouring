@@ -243,7 +243,7 @@ func (ring *IoUring) io_uring_register_ring_fd() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	ring.EnterRingFd = int32(up.Offset)
+	ring.EnterRingFd = int(up.Offset)
 	ring.IntFlags |= INT_FLAG_REG_RING
 	return ret, nil
 }

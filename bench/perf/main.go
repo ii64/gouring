@@ -29,8 +29,8 @@ var (
 func init() {
 	fs.UintVar(&entries, "entries", 256, "Entries")
 	fs.BoolVar(&sqPoll, "sqpoll", false, "Enable SQPOLL")
-	fs.UintVar(&sqThreadCpu, "sqthreadcpu", 4, "SQ Thread CPU")
-	fs.UintVar(&sqThreadIdle, "sqthreadidle", 10_000, "SQ Thread idle")
+	fs.UintVar(&sqThreadCpu, "sqthreadcpu", 16, "SQ Thread CPU")
+	fs.UintVar(&sqThreadIdle, "sqthreadidle", 10_000, "SQ Thread idle") // milliseconds
 
 	fs.UintVar(&N, "n", 10_000, "N times")
 	fs.UintVar(&noti, "noti", 10_000, "Notify per attempt N")
@@ -86,14 +86,14 @@ func main() {
 		for j = 0; j < entries; j++ {
 			for {
 				// sqe could be nil if SQ is already full so we spin until we got one
-				sqe = h.GetSQE()
+				sqe = h.GetSqe()
 				if sqe != nil {
 					break
 				}
 				runtime.Gosched()
 			}
 			gouring.PrepNop(sqe)
-			sqe.UserData = uint64(i + j)
+			sqe.UserData.SetUint64(uint64(i + j))
 		}
 		submitted, err = h.Submit()
 		if err != nil {
@@ -105,7 +105,10 @@ func main() {
 		}
 
 		for j = 0; j < entries; j++ {
-			err = h.WaitCQE(&cqe)
+			err = h.WaitCqe(&cqe)
+			if err == syscall.EINTR {
+				continue
+			}
 			if err != nil {
 				panic(err)
 			}
@@ -115,7 +118,8 @@ func main() {
 			if cqe.Res < 0 {
 				panic(syscall.Errno(-cqe.Res))
 			}
-			_ = cqe
+
+			h.SeenCqe(cqe)
 		}
 	}
 	_ = submitted

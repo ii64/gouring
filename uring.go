@@ -40,7 +40,7 @@ func (h *IoUring) SeenCqe(cqe *IoUringCqe) {
 }
 
 func (h *IoUring) Submit() (int, error) {
-	return h.io_uringn_submit()
+	return h.io_uring_submit()
 }
 
 func (h *IoUring) SubmitAndWait(waitNr uint32) (int, error) {

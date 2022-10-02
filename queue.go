@@ -234,7 +234,7 @@ func (ring *IoUring) io_uring_wait_cqes_new(cqePtr **IoUringCqe, waitNtr uint32,
 func (ring *IoUring) __io_uring_submit_timeout(waitNr uint32, ts *syscall.Timespec) (ret int, err error) {
 	sqe := ring.io_uring_get_sqe()
 	if sqe == nil {
-		ret, err = ring.io_uringn_submit()
+		ret, err = ring.io_uring_submit()
 		if err != nil {
 			return
 		}
@@ -309,7 +309,7 @@ func (ring *IoUring) io_uring_wait_cqe_timeout(cqePtr **IoUringCqe, ts *syscall.
  *
  * Returns number of sqes submitted
  */
-func (ring *IoUring) io_uringn_submit() (int, error) {
+func (ring *IoUring) io_uring_submit() (int, error) {
 	return ring.__io_uring_submit_and_wait(0)
 }
 

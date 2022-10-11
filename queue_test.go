@@ -151,7 +151,7 @@ func TestRingQueueSubmitSingleConsumer(t *testing.T) {
 			}
 
 			submit := func(t *testing.T, opt *IoUringParams, h *IoUring, expectedSubmitCount int) {
-				submitted, err := h.io_uringn_submit()
+				submitted, err := h.io_uring_submit()
 				assert.NoError(t, err)
 				if opt.Flags&IORING_SETUP_SQPOLL == 0 {
 					assert.Equal(t, expectedSubmitCount, submitted)

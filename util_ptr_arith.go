@@ -16,12 +16,20 @@ func ioUringSqeArray_Index(u ioUringSqeArray, i uintptr) *IoUringSqe {
 	return (*IoUringSqe)(unsafe.Pointer(uintptr(unsafe.Pointer(u)) + SizeofIoUringSqe*i))
 }
 
+func ioUringSqe128Array_Index(u ioUringSqeArray, i uintptr) *IoUringSqe {
+	return (*IoUringSqe)(unsafe.Pointer(uintptr(unsafe.Pointer(u)) + (SizeofIoUringSqe+64)*i))
+}
+
 //
 
 type ioUringCqeArray = unsafe.Pointer // *IoUringCqe
 
 func ioUringCqeArray_Index(u ioUringCqeArray, i uintptr) *IoUringCqe {
 	return (*IoUringCqe)(unsafe.Pointer(uintptr(unsafe.Pointer(u)) + SizeofIoUringCqe*i))
+}
+
+func ioUringCqe32Array_Index(u ioUringCqeArray, i uintptr) *IoUringCqe {
+	return (*IoUringCqe)(unsafe.Pointer(uintptr(unsafe.Pointer(u)) + (SizeofIoUringCqe+SizeofIoUringCqe)*i))
 }
 
 //

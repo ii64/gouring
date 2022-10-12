@@ -2,3 +2,5 @@
 *.cpu
 *.mem
 *.test
+
+.idea

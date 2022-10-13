@@ -19,7 +19,8 @@ func (ring *IoUring) sq_ring_needs_enter(flags *uint32) bool {
 		return true
 	}
 
-	// FIXME: io_uring_smp_mb
+	// FIXME: Extra call - no inline asm.
+	io_uring_smp_mb()
 
 	if atomic.LoadUint32(ring.Sq._Flags())&IORING_SQ_NEED_WAKEUP != 0 {
 		*flags |= IORING_ENTER_SQ_WAKEUP

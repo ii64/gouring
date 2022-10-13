@@ -34,7 +34,7 @@ func ioUringCqe32Array_Index(u ioUringCqeArray, i uintptr) *IoUringCqe {
 
 //
 
-type UserData [8]byte // uint64
+type UserData uint64
 
 func (u *UserData) SetUint64(v uint64) {
 	putUintptr(unsafe.Pointer(u), uintptr(v))
@@ -49,6 +49,9 @@ func (u *UserData) SetUnsafe(ptr unsafe.Pointer) {
 
 func (u UserData) GetUnsafe() unsafe.Pointer {
 	return *(*unsafe.Pointer)(unsafe.Pointer(&u))
+}
+func (u UserData) GetBytes() [8]byte {
+	return *(*[8]byte)(u.GetUnsafe())
 }
 func (u UserData) GetUintptr() uintptr {
 	return uintptr(u.GetUnsafe())

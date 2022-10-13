@@ -3,10 +3,12 @@ package gouring
 import "unsafe"
 
 const (
-	SizeofUnsigned   = unsafe.Sizeof(uint32(0))
-	SizeofUint32     = unsafe.Sizeof(uint32(0))
-	SizeofIoUringSqe = unsafe.Sizeof(IoUringSqe{})
-	SizeofIoUringCqe = unsafe.Sizeof(IoUringCqe{})
+	SizeofUnsigned     = unsafe.Sizeof(uint32(0))
+	SizeofUint32       = unsafe.Sizeof(uint32(0))
+	SizeofIoUringSqe   = unsafe.Sizeof(IoUringSqe{})
+	Align128IoUringSqe = 64
+	SizeofIoUringCqe   = unsafe.Sizeof(IoUringCqe{})
+	Align32IoUringCqe  = SizeofIoUringCqe
 )
 
 type IoUring struct {

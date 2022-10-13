@@ -29,7 +29,7 @@ func (ring *IoUring) io_uring_queue_exit() {
 	cq := &ring.Cq
 	sqeSize := SizeofIoUringSqe
 	if ring.Flags&IORING_SETUP_SQE128 != 0 {
-		sqeSize += 64
+		sqeSize += Align128IoUringSqe
 	}
 	munmap(unsafe.Pointer(sq.Sqes), sqeSize*uintptr(*sq._RingEntries()))
 	io_uring_unmap_rings(sq, cq)
@@ -104,7 +104,7 @@ func io_uring_mmap(fd int, p *IoUringParams, sq *IoUringSq, cq *IoUringCq) (err 
 
 	size = SizeofIoUringSqe
 	if p.Flags&IORING_SETUP_SQE128 != 0 {
-		size += 64
+		size += Align128IoUringSqe
 	}
 	var sqeAddr unsafe.Pointer
 	sqeAddr, err = mmap(nil, size*uintptr(p.SqEntries),

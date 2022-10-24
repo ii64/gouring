@@ -2,3 +2,4 @@
 *.cpu
 *.mem
 *.test
+*.code-workspace

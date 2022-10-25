@@ -3,8 +3,11 @@ package gouring
 import (
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/unix"
 )
 
+//go:nosplit
 func PrepRW(op IoUringOp, sqe *IoUringSqe, fd int,
 	addr unsafe.Pointer, len int, offset uint64) {
 	sqe.Opcode = op
@@ -141,17 +144,35 @@ func PrepFilesUpdate(sqe *IoUringSqe, fds []int32, offset int) {
 	PrepRW(IORING_OP_FILES_UPDATE, sqe, -1, unsafe.Pointer(&fds[0]), len(fds), uint64(offset))
 }
 
-//	func PrepFallocate(sqe *IoUringSqe, fd int, mode int, offset uint64, length uint64) {
-//		PrepRW(IORING_OP_FALLOCATE, sqe, fd, )
-//	}
+func PrepFallocate(sqe *IoUringSqe, fd int, mode int, offset uint64, length int) {
+	PrepRW(IORING_OP_FALLOCATE, sqe, fd, nil, mode, offset)
+	sqe.SetAddr_Value(uint64(length))
+}
 
 func PrepOpenat(sqe *IoUringSqe, dfd int, path *byte, flags uint32, mode int) {
 	PrepRW(IORING_OP_OPENAT, sqe, dfd, unsafe.Pointer(path), mode, 0)
 	sqe.SetOpenFlags(flags)
 }
+
+func PrepOpenat2(sqe *IoUringSqe, dfd int, path *byte, how *unix.OpenHow) {
+	PrepRW(IORING_OP_OPENAT2, sqe, dfd, unsafe.Pointer(path), int(unsafe.Sizeof(*how)), 0)
+	sqe.SetOffset_RawPtr(unsafe.Pointer(how))
+}
+
+func PrepOpenat2Direct(sqe *IoUringSqe, dfd int, path *byte, how *unix.OpenHow, fileIndex uint32) {
+	PrepOpenat2(sqe, dfd, path, how)
+	__io_uring_set_target_fixed_file(sqe, fileIndex)
+}
+
 func PrepOpenatDirect(sqe *IoUringSqe, dfd int, path *byte, flags uint32, mode int, fileIndex uint32) {
 	PrepOpenat(sqe, dfd, path, flags, mode)
 	__io_uring_set_target_fixed_file(sqe, fileIndex)
+}
+
+func PrepStatx(sqe *IoUringSqe, dfd int, path *byte, flags uint32, mask uint32, statxbuf *unix.Statx_t) {
+	PrepRW(IORING_OP_STATX, sqe, dfd, unsafe.Pointer(path), int(mask), 0)
+	sqe.SetOffset_RawPtr(unsafe.Pointer(statxbuf))
+	sqe.SetStatxFlags(flags)
 }
 
 func PrepFadvise(sqe *IoUringSqe, fd int, offset uint64, length int, advice uint32) {
@@ -178,31 +199,10 @@ func PrepSendZcFixed(sqe *IoUringSqe, sockfd int, buf *byte, length int, flags u
 	sqe.SetBufIndex(bufIndex)
 }
 
-// statx
-//send
-//recv
-//openat2
-//openat2Direct
-//epollCtl
-//provide_buffers
-//remove_buffers
-//shutdown
-//unlinkat
-//unlink
-//renameat
-//rename
-//sync_file_range
-//mkdirat
-//mkdir
-//symlinkat
-//symlink
-//linkat
-//link
-//msg_ring
-//getxattr
-//setxattr
-//fgetxattr
-//fsetxattr
+func PrepRecv(sqe *IoUringSqe, sockfd int, buf *byte, length int, flags uint32) {
+	PrepRW(IORING_OP_RECV, sqe, sockfd, unsafe.Pointer(buf), length, 0)
+	sqe.SetMsgFlags(flags)
+}
 
 func PrepSocket(sqe *IoUringSqe, domain int, _type int, protocol int, flags uint32) {
 	PrepRW(IORING_OP_SOCKET, sqe, domain, nil, protocol, uint64(_type))
@@ -222,6 +222,11 @@ func PrepSocketDirectAlloc(sqe *IoUringSqe, domain int, _type int, protocol int,
 /*
 	Poll
 */
+
+// PrepEpollCtl syscall.EpollCtl look-alike
+func PrepEpollCtl(sqe *IoUringSqe, epfd int, op int, fd int, ev *syscall.EpollEvent) {
+	PrepRW(IORING_OP_EPOLL_CTL, sqe, epfd, unsafe.Pointer(ev), op, uint64(fd))
+}
 
 func PrepPollAdd(sqe *IoUringSqe, fd int, pollMask uint32) {
 	PrepRW(IORING_OP_POLL_ADD, sqe, fd, nil, 0, 0)
@@ -246,6 +251,24 @@ func PrepFsync(sqe *IoUringSqe, fd int, fsyncFlags uint32) {
 	sqe.SetFsyncFlags(fsyncFlags)
 }
 
+/*
+	Multishot
+*/
+
+func PrepMultishotAccept(sqe *IoUringSqe, fd int, rsa *syscall.RawSockaddrAny, rsaSz *uintptr, flags uint32) {
+	PrepAccept(sqe, fd, rsa, rsaSz, flags)
+	sqe.IoPrio |= IORING_ACCEPT_MULTISHOT
+}
+
+func PrepMultishotAcceptDirect(sqe *IoUringSqe, fd int, rsa *syscall.RawSockaddrAny, rsaSz *uintptr, flags uint32) {
+	PrepMultishotAccept(sqe, fd, rsa, rsaSz, flags)
+	__io_uring_set_target_fixed_file(sqe, IORING_FILE_INDEX_ALLOC-1)
+}
+
+/*
+	Extra
+*/
+
 func PrepCancel64(sqe *IoUringSqe, ud UserData, flags uint32) {
 	PrepRW(IORING_OP_ASYNC_CANCEL, sqe, -1, nil, 0, 0)
 	sqe.SetAddr(ud.GetUnsafe())
@@ -264,18 +287,91 @@ func PrepLinkTimeout(sqe *IoUringSqe, ts *syscall.Timespec, flags uint32) {
 	sqe.SetTimeoutFlags(flags)
 }
 
-/*
-	Multishot
-*/
-
-func PrepMultishotAccept(sqe *IoUringSqe, fd int, rsa *syscall.RawSockaddrAny, rsaSz *uintptr, flags uint32) {
-	PrepAccept(sqe, fd, rsa, rsaSz, flags)
-	sqe.IoPrio |= IORING_ACCEPT_MULTISHOT
+func PrepProvideBuffers(sqe *IoUringSqe, addr unsafe.Pointer, length int, nr int, bGid uint16, bId int) {
+	PrepRW(IORING_OP_PROVIDE_BUFFERS, sqe, nr, addr, length, uint64(bId))
+	sqe.SetBufGroup(bGid)
 }
 
-func PrepMultishotAcceptDirect(sqe *IoUringSqe, fd int, rsa *syscall.RawSockaddrAny, rsaSz *uintptr, flags uint32) {
-	PrepMultishotAccept(sqe, fd, rsa, rsaSz, flags)
-	__io_uring_set_target_fixed_file(sqe, IORING_FILE_INDEX_ALLOC-1)
+func PrepRemoveBuffers(sqe *IoUringSqe, nr int, bGid uint16) {
+	PrepRW(IORING_OP_REMOVE_BUFFERS, sqe, nr, nil, 0, 0)
+	sqe.SetBufGroup(bGid)
+}
+
+func PrepShutdown(sqe *IoUringSqe, fd int, how int) {
+	PrepRW(IORING_OP_SHUTDOWN, sqe, fd, nil, how, 0)
+}
+
+func PrepUnlinkat(sqe *IoUringSqe, dfd int, path *byte, flags uint32) {
+	PrepRW(IORING_OP_UNLINKAT, sqe, dfd, unsafe.Pointer(path), 0, 0)
+	sqe.SetUnlinkFlags(flags)
+}
+
+func PrepUnlink(sqe *IoUringSqe, path *byte, flags uint32) {
+	PrepUnlinkat(sqe, unix.AT_FDCWD, path, flags)
+}
+
+func PrepRenameat(sqe *IoUringSqe, oldDfd int, oldPath *byte, newDfd int, newPath *byte, flags uint32) {
+	PrepRW(IORING_OP_RENAMEAT, sqe, oldDfd, unsafe.Pointer(oldPath), newDfd, 0)
+	sqe.SetOffset_RawPtr(unsafe.Pointer(newPath))
+	sqe.SetRenameFlags(flags)
+}
+
+func PrepRename(sqe *IoUringSqe, oldPath *byte, newPath *byte) {
+	PrepRenameat(sqe, unix.AT_FDCWD, oldPath, unix.AT_FDCWD, newPath, 0)
+}
+
+func PrepSyncFileRange(sqe *IoUringSqe, fd int, length int, offset uint64, flags uint32) {
+	PrepRW(IORING_OP_SYNC_FILE_RANGE, sqe, fd, nil, length, offset)
+	sqe.SetSyncRangeFlags(flags)
+}
+
+func PrepMkdirat(sqe *IoUringSqe, dfd int, path *byte, mode int) {
+	PrepRW(IORING_OP_MKDIRAT, sqe, dfd, unsafe.Pointer(path), mode, 0)
+}
+
+func PrepMkdir(sqe *IoUringSqe, dfd int, path *byte, mode int) {
+	PrepMkdirat(sqe, unix.AT_FDCWD, path, mode)
+}
+
+func PrepSymlinkat(sqe *IoUringSqe, target *byte, newDirfd int, linkpath *byte) {
+	PrepRW(IORING_OP_SYMLINKAT, sqe, newDirfd, unsafe.Pointer(target), 0, 0)
+	sqe.SetOffset_RawPtr(unsafe.Pointer(linkpath))
+}
+
+func PrepSymlink(sqe *IoUringSqe, target *byte, linkpath *byte) {
+	PrepSymlinkat(sqe, target, unix.AT_FDCWD, linkpath)
+}
+
+func PrepLinkat(sqe *IoUringSqe, oldDfd int, oldPath *byte, newDfd int, newPath *byte, flags uint32) {
+	PrepRW(IORING_OP_LINKAT, sqe, oldDfd, unsafe.Pointer(oldPath), newDfd, 0)
+	sqe.SetOffset_RawPtr(unsafe.Pointer(newPath))
+}
+
+func PrepLink(sqe *IoUringSqe, oldPath *byte, newPath *byte, flags uint32) {
+	PrepLinkat(sqe, unix.AT_FDCWD, oldPath, unix.AT_FDCWD, newPath, flags)
+}
+
+func PrepMsgRing(sqe *IoUringSqe, fd int, length int, data uint64, flags uint32) {
+	PrepRW(IORING_OP_MSG_RING, sqe, fd, nil, length, data)
+	sqe.SetRwFlags(flags)
+}
+
+func PrepGetxattr(sqe *IoUringSqe, name *byte, value *byte, path *byte, length int) {
+	PrepRW(IORING_OP_GETXATTR, sqe, 0, unsafe.Pointer(name), length, 0)
+	sqe.SetOffset_RawPtr(unsafe.Pointer(path))
+	sqe.SetXattrFlags(0)
+}
+
+func PrepSetxattr(sqe *IoUringSqe, name *byte, value *byte, path *byte, flags uint32, length int) {
+	PrepRW(IORING_OP_SETXATTR, sqe, 0, unsafe.Pointer(name), length, 0)
+	sqe.SetOffset_RawPtr(unsafe.Pointer(value))
+	sqe.SetXattrFlags(flags)
+}
+
+func PrepFsetxattr(sqe *IoUringSqe, fd int, name *byte, value *byte, flags uint32, length int) {
+	PrepRW(IORING_OP_FSETXATTR, sqe, fd, unsafe.Pointer(name), length, 0)
+	sqe.SetOffset_RawPtr(unsafe.Pointer(value))
+	sqe.SetXattrFlags(flags)
 }
 
 //go:nosplit

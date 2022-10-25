@@ -2,6 +2,8 @@ package gouring
 
 import (
 	"unsafe"
+
+	"golang.org/x/sys/unix"
 )
 
 const (
@@ -12,8 +14,4 @@ const (
 	NSIG          = (SIGTMAX + 1)
 )
 
-type Sigset_t struct {
-	Val [SIGSET_NWORDS]uint64
-}
-
-// https://baike.baidu.com/item/sigset_t/4481187
+type Sigset_t = unix.Sigset_t

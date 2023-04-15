@@ -55,13 +55,6 @@ var (
 	NVME_URING_CMD_ADMIN_VEC = ioctl.IOWR('N', 0x83, int(SizeofNvmeUringCmd))
 )
 
-func init() {
-	println("dbg NVME_URING_CMD_IO", NVME_URING_CMD_IO)
-	println("dbg NVME_URING_CMD_IO_VEC", NVME_URING_CMD_IO_VEC)
-	println("dbg NVME_URING_CMD_ADMIN", NVME_URING_CMD_ADMIN)
-	println("dbg NVME_URING_CMD_ADMIN_VEC", NVME_URING_CMD_ADMIN_VEC)
-}
-
 // nvme_admin_opcode
 const (
 	NVME_ADMIN_IDENTIFY = 0x06

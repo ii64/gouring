@@ -5,9 +5,29 @@ import (
 )
 
 /*
+ * GetBigCqe
+ *
  * If the ring is initialized with IORING_SETUP_CQE32, then this field
  * contains 16-bytes of padding, doubling the size of the CQE.
  */
-func (cqe *IoUringCqe) GetBigCqe() *[2]uint64 {
-	return (*[2]uint64)(unsafe.Pointer(uintptr(unsafe.Pointer(cqe)) + SizeofIoUringSqe))
+func (cqe *IoUringCqe) GetBigCqe() unsafe.Pointer {
+	return unsafe.Add(unsafe.Pointer(cqe), SizeofIoUringCqe)
+}
+
+/*
+ * GetOps
+ *
+ * Get io_uring probe ops
+ */
+func (probe *IoUringProbe) GetOps() unsafe.Pointer {
+	return unsafe.Add(unsafe.Pointer(probe), SizeofIoUringProbe)
+}
+
+/*
+ * GetBufs
+ *
+ * Get io_uring buf_ring bufs
+ */
+func (bring *IoUringBufRing) GetBufs() unsafe.Pointer {
+	return unsafe.Add(unsafe.Pointer(bring), SizeofIoUringBufRing)
 }

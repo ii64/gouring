@@ -20,6 +20,12 @@ type IoUringSqe_Union1 uint64
 func (u *IoUringSqe_Union1) SetOffset(v uint64)                { *u = IoUringSqe_Union1(v) }
 func (u *IoUringSqe_Union1) SetOffset_RawPtr(v unsafe.Pointer) { *u = IoUringSqe_Union1((uintptr)(v)) }
 func (u *IoUringSqe_Union1) SetAddr2(v uint64)                 { *u = IoUringSqe_Union1(v) }
+func (u *IoUringSqe_Union1) SetCmdOp(v uint32) {
+	(*struct {
+		CmdOp  uint32
+		__pad1 uint32
+	})(unsafe.Pointer(u)).CmdOp = v
+}
 
 type IoUringSqe_Union2 uint64
 
@@ -47,6 +53,7 @@ func (u *IoUringSqe_Union3) SetUnlinkFlags(v uint32)    { *u = IoUringSqe_Union3
 func (u *IoUringSqe_Union3) SetHardlinkFlags(v uint32)  { *u = IoUringSqe_Union3(v) }
 func (u *IoUringSqe_Union3) SetXattrFlags(v uint32)     { *u = IoUringSqe_Union3(v) }
 func (u *IoUringSqe_Union3) SetMsgRingFlags(v uint32)   { *u = IoUringSqe_Union3(v) }
+func (u *IoUringSqe_Union3) SetUringCmdFlags(v uint32)  { *u = IoUringSqe_Union3(v) }
 func (u *IoUringSqe_Union3) SetOpFlags(v uint32)        { *u = IoUringSqe_Union3(v) } //generic
 func (u IoUringSqe_Union3) GetOpFlags() uint32          { return uint32(u) }          //generic
 
@@ -67,17 +74,13 @@ func (u *IoUringSqe_Union5) SetAddrLen(v uint16) {
 
 type IoUringSqe_Union6 [2]uint64
 
-func (u *IoUringSqe_Union6) SetAddr3(v uint64) {
-	u[0] = v
-}
+func (u *IoUringSqe_Union6) SetAddr3(v uint64) { u[0] = v }
 
 /*
  * If the ring is initialized with IORING_SETUP_SQE128, then
  * this field is used for 80 bytes of arbitrary command data
  */
-func (u *IoUringSqe_Union6) GetCmd() *byte {
-	return (*byte)(unsafe.Pointer(u))
-}
+func (u *IoUringSqe_Union6) GetCmd() unsafe.Pointer { return unsafe.Pointer(u) }
 
 type IoUringSqe struct {
 	Opcode IoUringOp /* type of operation for this sqe */
@@ -88,6 +91,10 @@ type IoUringSqe struct {
 	//  union {
 	// 	 __u64	off;	/* offset into file */
 	// 	 __u64	addr2;
+	//	 struct {
+	//	 	__u32	cmd_op;
+	//	 	__u32	__pad1;
+	//	 };
 	//  };
 	IoUringSqe_Union1
 
@@ -117,7 +124,8 @@ type IoUringSqe struct {
 	// 	 __u32		unlink_flags;
 	// 	 __u32		hardlink_flags;
 	// 	 __u32		xattr_flags;
-	//  __u32		msg_ring_flags;
+	//   __u32		msg_ring_flags;
+	//   __u32		uring_cmd_flags;
 	//  };
 	IoUringSqe_Union3
 
@@ -301,6 +309,13 @@ const (
 )
 
 /*
+ * sqe->uring_cmd_flags
+ * IORING_URING_CMD_FIXED	use registered buffer; pass thig flag
+ *				along with setting sqe->buf_index.
+ */
+const IORING_URING_CMD_FIXED = (1 << 0)
+
+/*
  * sqe->fsync_flags
  */
 const IORING_FSYNC_DATASYNC = (1 << 0)
@@ -375,9 +390,11 @@ const (
  * IORING_RECVSEND_FIXED_BUF	Use registered buffers, the index is stored in
  *				the buf_index field.
  */
-const IORING_RECVSEND_POLL_FIRST = (1 << 0)
-const IORING_RECV_MULTISHOT = (1 << 1)
-const IORING_RECVSEND_FIXED_BUF = (1 << 2)
+const (
+	IORING_RECVSEND_POLL_FIRST = (1 << 0)
+	IORING_RECV_MULTISHOT      = (1 << 1)
+	IORING_RECVSEND_FIXED_BUF  = (1 << 2)
+)
 
 /*
  * accept flags stored in sqe->ioprio
@@ -595,7 +612,7 @@ const (
 type IoUringFilesUpdate struct {
 	Offset uint32
 	resv   uint32
-	Fds    uint64 // __aligned_u64/* __s32 * */
+	Fds    uint64 // TODO: __aligned_u64/* __s32 * */
 }
 
 /*
@@ -608,21 +625,21 @@ type IoUringRsrcRegister struct {
 	Nr    uint32
 	Flags uint32
 	resv2 uint64
-	Data  uint64 // __aligned_u64
-	Tags  uint64 // __aligned_u64
+	Data  uint64 // TODO: __aligned_u64
+	Tags  uint64 // TODO: __aligned_u64
 }
 
 type IoUringRsrcUpdate struct {
 	Offset uint32
 	resv   uint32
-	Data   uint64 // __aligned_u64
+	Data   uint64 // TODO: __aligned_u64
 }
 
 type IoUringRsrcUpdate2 struct {
 	Offset uint32
 	resv   uint32
-	Data   uint64 // __aligned_u64
-	Tags   uint64 // __aligned_u64
+	Data   uint64 // TODO: __aligned_u64
+	Tags   uint64 // TODO: __aligned_u64
 	Nr     uint32
 	resv2  uint32
 }
@@ -658,7 +675,7 @@ type IoUringProbe struct {
 	resv    uint16
 	resv2   [3]uint32
 
-	// TODO: FAM access.
+	// IMPLEMENTED ON hdr_extra
 	// ops     [0]IoUringProbeOp
 }
 
@@ -693,6 +710,8 @@ type IoUringBufRing struct {
 		resv3 uint16
 		Tail  uint16
 	}
+
+	// IMPLEMENTED ON hdr_extra
 	// bufs [0]IoUringBuf
 	//  };
 }

@@ -22,7 +22,7 @@ func (ring *IoUring) sq_ring_needs_enter(flags *uint32) bool {
 	// FIXME: Extra call - no inline asm.
 	io_uring_smp_mb()
 
-	if atomic.LoadUint32(ring.Sq._Flags())&IORING_SQ_NEED_WAKEUP != 0 {
+	if atomic.LoadUint32(ring.Sq._KFlags())&IORING_SQ_NEED_WAKEUP != 0 {
 		*flags |= IORING_ENTER_SQ_WAKEUP
 		return true
 	}
@@ -30,7 +30,7 @@ func (ring *IoUring) sq_ring_needs_enter(flags *uint32) bool {
 }
 
 func (ring *IoUring) cq_ring_needs_flush() bool {
-	return atomic.LoadUint32(ring.Sq._Flags())&(IORING_SQ_CQ_OVERFLOW|IORING_SQ_TASKRUN) != 0
+	return atomic.LoadUint32(ring.Sq._KFlags())&(IORING_SQ_CQ_OVERFLOW|IORING_SQ_TASKRUN) != 0
 }
 
 func (ring *IoUring) cq_ring_needs_enter() bool {
@@ -119,8 +119,8 @@ func (ring *IoUring) io_uring_peek_batch_cqe(cqes []*IoUringCqe, count uint32) u
 again:
 	ready = ring.io_uring_cq_ready()
 	if ready > 0 {
-		var head = *ring.Cq._Head()
-		var mask = *ring.Cq._RingMask()
+		var head = *ring.Cq._KHead()
+		var mask = *ring.Cq._KRingMask()
 		var last uint32
 		if count > ready {
 			count = ready
@@ -159,8 +159,8 @@ done:
  */
 func (ring *IoUring) __io_uring_flush_sq() uint32 {
 	sq := &ring.Sq
-	var mask = *sq._RingMask()
-	var ktail = *sq._Tail()
+	var mask = *sq._KRingMask()
+	var ktail = *sq._KTail()
 	var toSubmit = sq.SqeTail - sq.SqeHead
 
 	if toSubmit < 1 {
@@ -180,7 +180,7 @@ func (ring *IoUring) __io_uring_flush_sq() uint32 {
 	 * Ensure that the kernel sees the SQE updates before it sees the tail
 	 * update.
 	 */
-	atomic.StoreUint32(sq._Tail(), ktail)
+	atomic.StoreUint32(sq._KTail(), ktail)
 
 out:
 	/*
@@ -194,7 +194,7 @@ out:
 	 * we can submit. The point is, we need to be able to deal with this
 	 * situation regardless of any perceived atomicity.
 	 */
-	return ktail - *sq._Head()
+	return ktail - *sq._KHead()
 }
 
 /*
@@ -357,7 +357,7 @@ func (ring *IoUring) io_uring_get_sqe() *IoUringSqe {
  */
 func (ring *IoUring) _io_uring_get_sqe() (sqe *IoUringSqe) {
 	sq := &ring.Sq
-	var head = atomic.LoadUint32(sq._Head())
+	var head = atomic.LoadUint32(sq._KHead())
 	var next = sq.SqeTail + 1
 	var shift uint32 = 0
 
@@ -365,8 +365,8 @@ func (ring *IoUring) _io_uring_get_sqe() (sqe *IoUringSqe) {
 		shift = 1
 	}
 
-	if next-head <= *sq._RingEntries() {
-		sqe = ioUringSqeArray_Index(sq.Sqes, uintptr((sq.SqeTail&*sq._RingMask())<<shift))
+	if next-head <= *sq._KRingEntries() {
+		sqe = ioUringSqeArray_Index(sq.Sqes, uintptr((sq.SqeTail&*sq._KRingMask())<<shift))
 		sq.SqeTail = next
 		return
 	}
@@ -376,7 +376,7 @@ func (ring *IoUring) _io_uring_get_sqe() (sqe *IoUringSqe) {
 }
 
 func (ring *IoUring) io_uring_cq_ready() uint32 {
-	return atomic.LoadUint32(ring.Cq._Tail()) - *ring.Cq._Head()
+	return atomic.LoadUint32(ring.Cq._KTail()) - *ring.Cq._KHead()
 }
 
 func (ring *IoUring) __io_uring_peek_cqe(cqePtr **IoUringCqe, nrAvail *uint32) error {
@@ -384,7 +384,7 @@ func (ring *IoUring) __io_uring_peek_cqe(cqePtr **IoUringCqe, nrAvail *uint32) e
 	var err int32 = 0
 	var avail int
 
-	var mask = *ring.Cq._RingMask()
+	var mask = *ring.Cq._KRingMask()
 	var shift uint32 = 0
 
 	if ring.Flags&IORING_SETUP_CQE32 != 0 {
@@ -392,8 +392,8 @@ func (ring *IoUring) __io_uring_peek_cqe(cqePtr **IoUringCqe, nrAvail *uint32) e
 	}
 
 	for {
-		var tail = atomic.LoadUint32(ring.Cq._Tail())
-		var head = *ring.Cq._Head()
+		var tail = atomic.LoadUint32(ring.Cq._KTail())
+		var head = *ring.Cq._KHead()
 
 		cqe = nil
 		avail = int(tail - head)
@@ -431,7 +431,7 @@ func (ring *IoUring) __io_uring_peek_cqe(cqePtr **IoUringCqe, nrAvail *uint32) e
 
 func (ring *IoUring) io_uring_cq_advance(nr uint32) {
 	if nr > 0 {
-		atomic.StoreUint32(ring.Cq._Head(), *ring.Cq._Head()+nr)
+		atomic.StoreUint32(ring.Cq._KHead(), *ring.Cq._KHead()+nr)
 	}
 }
 

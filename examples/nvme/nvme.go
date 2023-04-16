@@ -37,7 +37,7 @@ func DoNvmeGetInfo(devPath string) error {
 		cmd nvme.NvmePassthruCmd
 	)
 
-	nsidRet, err := sys_ioctl(fd, uintptr(nvme.NVME_IOCTL_ID), 0)
+	nsidRet, err := sys_ioctl(fd, uintptr(nvme.NVME_IOCTL_ID()), 0)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func DoNvmeGetInfo(devPath string) error {
 		Cdw11:     nvme.NVME_CSI_NVM << nvme.NVME_IDENTIFY_CSI_SHIFT,
 		TimeoutMs: nvme.NVME_DEFAULT_IOCTL_TIMEOUT,
 	}
-	_, err = sys_ioctl(fd, uintptr(nvme.NVME_IOCTL_ADMIN_CMD), uintptr(unsafe.Pointer(&cmd)))
+	_, err = sys_ioctl(fd, uintptr(nvme.NVME_IOCTL_ADMIN_CMD()), uintptr(unsafe.Pointer(&cmd)))
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func DoIoUring(devPath string) error {
 	sqe := ring.GetSqe()
 	uring.PrepRead(sqe, fd, &buf[0], len(buf), 0)
 
-	sqe.SetCmdOp(uint32(nvme.NVME_URING_CMD_IO))
+	sqe.SetCmdOp(uint32(nvme.NVME_URING_CMD_IO()))
 	sqe.Opcode = uring.IORING_OP_URING_CMD
 
 	var off uint64 = 0

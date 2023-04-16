@@ -35,25 +35,21 @@ func _SizeChecker() {
 	_ = x[SizeofNvmeIdNs-0x1000]
 }
 
-// Can this NVME_URING_CMD_* folds into constant literal?
+func NVME_IOCTL_ID() int           { return ioctl.IO('N', 0x40) }
+func NVME_IOCTL_ADMIN_CMD() int    { return ioctl.IOWR('N', 0x41, int(SizeofNvmeAdminCmd)) }
+func NVME_IOCTL_SUBMIT_IO() int    { return ioctl.IOW('N', 0x42, int(SizeofNvmeUserIo)) }
+func NVME_IOCTL_IO_CMD() int       { return ioctl.IOR('N', 0x43, int(SizeofNvmePassthruCmd)) }
+func NVME_IOCTL_RESET() int        { return ioctl.IO('N', 0x44) }
+func NVME_IOCTL_SUBSYS_RESET() int { return ioctl.IO('N', 0x45) }
+func NVME_IOCTL_RESCAN() int       { return ioctl.IO('N', 0x46) }
+func NVME_IOCTL_ADMIN64_CMD() int  { return ioctl.IOWR('N', 0x47, int(SizeofNvmePassthruCmd64)) }
+func NVME_IOCTL_IO64_CMD() int     { return ioctl.IOWR('N', 0x48, int(SizeofNvmePassthruCmd64)) }
+func NVME_IOCTL_IO64_CMD_VEC() int { return ioctl.IOWR('N', 0x49, int(SizeofNvmePassthruCmd64)) }
 
-var (
-	NVME_IOCTL_ID           = ioctl.IO('N', 0x40)
-	NVME_IOCTL_ADMIN_CMD    = ioctl.IOWR('N', 0x41, int(SizeofNvmeAdminCmd))
-	NVME_IOCTL_SUBMIT_IO    = ioctl.IOW('N', 0x42, int(SizeofNvmeUserIo))
-	NVME_IOCTL_IO_CMD       = ioctl.IOR('N', 0x43, int(SizeofNvmePassthruCmd))
-	NVME_IOCTL_RESET        = ioctl.IO('N', 0x44)
-	NVME_IOCTL_SUBSYS_RESET = ioctl.IO('N', 0x45)
-	NVME_IOCTL_RESCAN       = ioctl.IO('N', 0x46)
-	NVME_IOCTL_ADMIN64_CMD  = ioctl.IOWR('N', 0x47, int(SizeofNvmePassthruCmd64))
-	NVME_IOCTL_IO64_CMD     = ioctl.IOWR('N', 0x48, int(SizeofNvmePassthruCmd64))
-	NVME_IOCTL_IO64_CMD_VEC = ioctl.IOWR('N', 0x49, int(SizeofNvmePassthruCmd64))
-
-	NVME_URING_CMD_IO        = ioctl.IOWR('N', 0x80, int(SizeofNvmeUringCmd))
-	NVME_URING_CMD_IO_VEC    = ioctl.IOWR('N', 0x81, int(SizeofNvmeUringCmd))
-	NVME_URING_CMD_ADMIN     = ioctl.IOWR('N', 0x82, int(SizeofNvmeUringCmd))
-	NVME_URING_CMD_ADMIN_VEC = ioctl.IOWR('N', 0x83, int(SizeofNvmeUringCmd))
-)
+func NVME_URING_CMD_IO() int        { return ioctl.IOWR('N', 0x80, int(SizeofNvmeUringCmd)) }
+func NVME_URING_CMD_IO_VEC() int    { return ioctl.IOWR('N', 0x81, int(SizeofNvmeUringCmd)) }
+func NVME_URING_CMD_ADMIN() int     { return ioctl.IOWR('N', 0x82, int(SizeofNvmeUringCmd)) }
+func NVME_URING_CMD_ADMIN_VEC() int { return ioctl.IOWR('N', 0x83, int(SizeofNvmeUringCmd)) }
 
 // nvme_admin_opcode
 const (

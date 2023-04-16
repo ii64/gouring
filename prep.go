@@ -113,6 +113,14 @@ func PrepAcceptDirect(sqe *IoUringSqe, fd int, rsa *syscall.RawSockaddrAny, rsaS
 	PrepAccept(sqe, fd, rsa, rsaSz, flags)
 	__io_uring_set_target_fixed_file(sqe, uint32(fileIndex))
 }
+func PrepAcceptMultishot(sqe *IoUringSqe, fd int, rsa *syscall.RawSockaddrAny, rsaSz *uintptr, flags uint32) {
+	PrepAccept(sqe, fd, rsa, rsaSz, flags)
+	sqe.IoPrio |= IORING_ACCEPT_MULTISHOT
+}
+func PrepAcceptMultishotDirect(sqe *IoUringSqe, fd int, rsa *syscall.RawSockaddrAny, rsaSz *uintptr, flags uint32) {
+	PrepAcceptMultishot(sqe, fd, rsa, rsaSz, flags)
+	__io_uring_set_target_fixed_file(sqe, IORING_FILE_INDEX_ALLOC-1)
+}
 
 func PrepConnect(sqe *IoUringSqe, fd int, rsa *syscall.RawSockaddrAny, rsaSz uintptr) {
 	PrepRW(IORING_OP_CONNECT, sqe, fd, unsafe.Pointer(rsa), 0, uint64(rsaSz))
@@ -122,6 +130,10 @@ func PrepRecvmsg(sqe *IoUringSqe, fd int, msg *syscall.Msghdr, flags uint) {
 	PrepRW(IORING_OP_RECVMSG, sqe, fd, unsafe.Pointer(msg), 1, 0)
 	sqe.SetMsgFlags(uint32(flags))
 }
+func PrepRecvmsgMultishot(sqe *IoUringSqe, fd int, msg *syscall.Msghdr, flags uint) {
+	PrepRecvmsg(sqe, fd, msg, flags)
+	sqe.IoPrio |= IORING_RECV_MULTISHOT
+}
 
 func PrepSendmsg(sqe *IoUringSqe, fd int, msg *syscall.Msghdr, flags uint32) {
 	PrepRW(IORING_OP_SENDMSG, sqe, fd, unsafe.Pointer(msg), 1, 0)
@@ -130,6 +142,11 @@ func PrepSendmsg(sqe *IoUringSqe, fd int, msg *syscall.Msghdr, flags uint32) {
 func PrepSendmsgZc(sqe *IoUringSqe, fd int, msg *syscall.Msghdr, flags uint32) {
 	PrepSendmsg(sqe, fd, msg, flags)
 	sqe.Opcode |= IORING_OP_SENDMSG_ZC
+}
+
+func PrepSendSetAddr(sqe *IoUringSqe, destAddr *syscall.RawSockaddrAny, addrLen uint16) {
+	sqe.SetAddr2_RawPtr(unsafe.Pointer(destAddr))
+	sqe.SetAddrLen(addrLen)
 }
 
 func PrepClose(sqe *IoUringSqe, fd int) {
@@ -154,6 +171,11 @@ func PrepOpenat(sqe *IoUringSqe, dfd int, path *byte, flags uint32, mode int) {
 	sqe.SetOpenFlags(flags)
 }
 
+func PrepOpenatDirect(sqe *IoUringSqe, dfd int, path *byte, flags uint32, mode int, fileIndex uint32) {
+	PrepOpenat(sqe, dfd, path, flags, mode)
+	__io_uring_set_target_fixed_file(sqe, fileIndex)
+}
+
 func PrepOpenat2(sqe *IoUringSqe, dfd int, path *byte, how *unix.OpenHow) {
 	PrepRW(IORING_OP_OPENAT2, sqe, dfd, unsafe.Pointer(path), int(unsafe.Sizeof(*how)), 0)
 	sqe.SetOffset_RawPtr(unsafe.Pointer(how))
@@ -161,11 +183,6 @@ func PrepOpenat2(sqe *IoUringSqe, dfd int, path *byte, how *unix.OpenHow) {
 
 func PrepOpenat2Direct(sqe *IoUringSqe, dfd int, path *byte, how *unix.OpenHow, fileIndex uint32) {
 	PrepOpenat2(sqe, dfd, path, how)
-	__io_uring_set_target_fixed_file(sqe, fileIndex)
-}
-
-func PrepOpenatDirect(sqe *IoUringSqe, dfd int, path *byte, flags uint32, mode int, fileIndex uint32) {
-	PrepOpenat(sqe, dfd, path, flags, mode)
 	__io_uring_set_target_fixed_file(sqe, fileIndex)
 }
 
@@ -184,6 +201,12 @@ func PrepMadvise(sqe *IoUringSqe, addr unsafe.Pointer, length int, advice uint32
 	sqe.SetFadviseAdvice(advice)
 }
 
+func PrepSendto(sqe *IoUringSqe, sockfd int, buf *byte, length int, flags uint32,
+	addr *syscall.RawSockaddrAny, addrLen uint16) {
+	PrepSend(sqe, sockfd, buf, length, flags)
+	PrepSendSetAddr(sqe, addr, addrLen)
+}
+
 func PrepSend(sqe *IoUringSqe, sockfd int, buf *byte, length int, flags uint32) {
 	PrepRW(IORING_OP_SEND, sqe, sockfd, unsafe.Pointer(buf), length, 0)
 	sqe.SetMsgFlags(flags)
@@ -199,9 +222,14 @@ func PrepSendZcFixed(sqe *IoUringSqe, sockfd int, buf *byte, length int, flags u
 	sqe.SetBufIndex(bufIndex)
 }
 
-func PrepRecv(sqe *IoUringSqe, sockfd int, buf *byte, length int, flags uint32) {
+func PrepRecv(sqe *IoUringSqe, sockfd int, buf *byte, length int, flags int) {
 	PrepRW(IORING_OP_RECV, sqe, sockfd, unsafe.Pointer(buf), length, 0)
-	sqe.SetMsgFlags(flags)
+	sqe.SetMsgFlags(uint32(flags))
+}
+
+func PrepRecvMultishot(sqe *IoUringSqe, sockfd int, buf *byte, length int, flags int) {
+	PrepRecv(sqe, sockfd, buf, length, flags)
+	sqe.IoPrio |= IORING_RECV_MULTISHOT
 }
 
 func PrepSocket(sqe *IoUringSqe, domain int, _type int, protocol int, flags uint32) {
@@ -249,20 +277,6 @@ func PrepPollUpdate(sqe *IoUringSqe, oldUserdata UserData, newUserdata UserData,
 func PrepFsync(sqe *IoUringSqe, fd int, fsyncFlags uint32) {
 	PrepRW(IORING_OP_FSYNC, sqe, fd, nil, 0, 0)
 	sqe.SetFsyncFlags(fsyncFlags)
-}
-
-/*
-	Multishot
-*/
-
-func PrepMultishotAccept(sqe *IoUringSqe, fd int, rsa *syscall.RawSockaddrAny, rsaSz *uintptr, flags uint32) {
-	PrepAccept(sqe, fd, rsa, rsaSz, flags)
-	sqe.IoPrio |= IORING_ACCEPT_MULTISHOT
-}
-
-func PrepMultishotAcceptDirect(sqe *IoUringSqe, fd int, rsa *syscall.RawSockaddrAny, rsaSz *uintptr, flags uint32) {
-	PrepMultishotAccept(sqe, fd, rsa, rsaSz, flags)
-	__io_uring_set_target_fixed_file(sqe, IORING_FILE_INDEX_ALLOC-1)
 }
 
 /*
@@ -368,8 +382,14 @@ func PrepSetxattr(sqe *IoUringSqe, name *byte, value *byte, path *byte, flags ui
 	sqe.SetXattrFlags(flags)
 }
 
-func PrepFsetxattr(sqe *IoUringSqe, fd int, name *byte, value *byte, flags uint32, length int) {
-	PrepRW(IORING_OP_FSETXATTR, sqe, fd, unsafe.Pointer(name), length, 0)
+func PrepFgetxattr(sqe *IoUringSqe, fd int, name *byte, value *byte, length uint) {
+	PrepRW(IORING_OP_FGETXATTR, sqe, fd, unsafe.Pointer(name), int(length), 0)
+	sqe.SetOffset_RawPtr(unsafe.Pointer(value))
+	sqe.SetXattrFlags(0)
+}
+
+func PrepFsetxattr(sqe *IoUringSqe, fd int, name *byte, value *byte, flags uint32, length uint) {
+	PrepRW(IORING_OP_FSETXATTR, sqe, fd, unsafe.Pointer(name), int(length), 0)
 	sqe.SetOffset_RawPtr(unsafe.Pointer(value))
 	sqe.SetXattrFlags(flags)
 }

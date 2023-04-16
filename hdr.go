@@ -20,6 +20,7 @@ type IoUringSqe_Union1 uint64
 func (u *IoUringSqe_Union1) SetOffset(v uint64)                { *u = IoUringSqe_Union1(v) }
 func (u *IoUringSqe_Union1) SetOffset_RawPtr(v unsafe.Pointer) { *u = IoUringSqe_Union1((uintptr)(v)) }
 func (u *IoUringSqe_Union1) SetAddr2(v uint64)                 { *u = IoUringSqe_Union1(v) }
+func (u *IoUringSqe_Union1) SetAddr2_RawPtr(v unsafe.Pointer)  { *u = IoUringSqe_Union1((uintptr)(v)) }
 func (u *IoUringSqe_Union1) SetCmdOp(v uint32) {
 	(*struct {
 		CmdOp  uint32

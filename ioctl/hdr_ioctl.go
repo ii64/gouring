@@ -34,7 +34,7 @@ func IOC(dir, typ, nr, siz int) int {
 }
 
 /*
- IO ops
+	IO ops
 */
 
 //go:nosplit

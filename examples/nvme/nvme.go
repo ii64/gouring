@@ -10,6 +10,12 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// NOTICE NOTICE NOTICE NOTICE NOTICE
+//
+//   This example is performing **READ** access to NVMe via low-level control device.
+//
+// NOTICE NOTICE NOTICE NOTICE NOTICE
+
 var (
 	// hardcoded device path
 	// devicePath = "/dev/nvme0n1"
@@ -78,10 +84,13 @@ func DoIoUring(devPath string) error {
 	}
 	defer unix.Close(fd)
 
-	var buf [0x1000]byte
+	var bufs [10][0x1000]byte
+	var sqe *uring.IoUringSqe
+	sqe = ring.GetSqe()
 
-	sqe := ring.GetSqe()
-	uring.PrepRead(sqe, fd, &buf[0], len(buf), 0)
+	buf := bufs[1]
+	bufSz := len(buf)
+	uring.PrepRead(sqe, fd, &buf[0], bufSz, 0)
 
 	sqe.SetCmdOp(uint32(nvme.NVME_URING_CMD_IO()))
 	sqe.Opcode = uring.IORING_OP_URING_CMD
@@ -104,8 +113,8 @@ func DoIoUring(devPath string) error {
 
 		Nsid: nsid,
 
-		Addr:    uint64(uintptr(unsafe.Pointer(&buf))),
-		DataLen: uint32(len(buf)),
+		Addr:    uint64(uintptr(unsafe.Pointer(&buf[0]))),
+		DataLen: uint32(bufSz),
 	}
 	cmdPtr := (*nvme.NvmeUringCmd)(sqe.GetCmd())
 	*cmdPtr = cmd // copy
@@ -119,15 +128,17 @@ func DoIoUring(devPath string) error {
 	fmt.Println("submitted", submitted)
 
 	var cqe *uring.IoUringCqe
+	// for i := 0; i < 2; i++ {
 	if err := ring.WaitCqe(&cqe); err != nil {
 		return err
 	}
-	ring.SeenCqe(cqe)
-
 	fmt.Printf("CQE:\t%+#v\n", cqe)
 	cqeExtra := (*[2]uint64)(cqe.GetBigCqe())
 	fmt.Printf("CQE Extra:\t%+#v\n", cqeExtra)
 	fmt.Printf("Buffer: %+#v\n", buf)
+	fmt.Printf("=========\n")
+	ring.SeenCqe(cqe)
+	// }
 	return nil
 }
 

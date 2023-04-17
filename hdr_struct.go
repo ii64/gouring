@@ -13,6 +13,7 @@ const (
 	SizeofIoUringProbe   = unsafe.Sizeof(IoUringProbe{})
 	SizeofIoUringProbeOp = unsafe.Sizeof(IoUringProbeOp{})
 	SizeofIoUringBufRing = unsafe.Sizeof(IoUringBufRing{})
+	SizeofIoUringBuf     = unsafe.Sizeof(IoUringBuf{})
 )
 
 func _SizeChecker() {
@@ -22,6 +23,7 @@ func _SizeChecker() {
 	_ = x[SizeofIoUringProbe-16]
 	_ = x[SizeofIoUringProbeOp-8]
 	_ = x[SizeofIoUringBufRing-16]
+	_ = x[SizeofIoUringBuf-16]
 }
 
 type IoUring struct {

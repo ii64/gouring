@@ -22,6 +22,9 @@ func (cqe *IoUringCqe) GetBigCqe() unsafe.Pointer {
 func (probe *IoUringProbe) GetOps() unsafe.Pointer {
 	return unsafe.Add(unsafe.Pointer(probe), SizeofIoUringProbe)
 }
+func (probe *IoUringProbe) GetOpAt(index int) *IoUringProbeOp {
+	return (*IoUringProbeOp)(unsafe.Add(probe.GetOps(), SizeofIoUringProbeOp*uintptr(index)))
+}
 
 /*
  * GetBufs
@@ -30,4 +33,7 @@ func (probe *IoUringProbe) GetOps() unsafe.Pointer {
  */
 func (bring *IoUringBufRing) GetBufs() unsafe.Pointer {
 	return unsafe.Add(unsafe.Pointer(bring), SizeofIoUringBufRing)
+}
+func (bring *IoUringBufRing) GetBufAt(index int) *IoUringBuf {
+	return (*IoUringBuf)(unsafe.Add(bring.GetBufs(), SizeofIoUringBuf*uintptr(index)))
 }

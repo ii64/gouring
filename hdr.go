@@ -252,8 +252,6 @@ const IORING_SETUP_DEFER_TASKRUN = (1 << 13)
 
 type IoUringOp = uint8
 
-//go:generate stringerx -type=IoUringOp
-
 const (
 	IORING_OP_NOP IoUringOp = iota
 	IORING_OP_READV
@@ -672,7 +670,7 @@ type IoUringProbeOp struct {
 
 type IoUringProbe struct {
 	last_op uint8 /* last opcode supported */
-	uint8         /* length of ops[] array below */
+	ops_len uint8 /* length of ops[] array below */
 	resv    uint16
 	resv2   [3]uint32
 

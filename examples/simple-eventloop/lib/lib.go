@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"runtime"
+	"sync/atomic"
 	"syscall"
 	"unsafe"
 
@@ -66,6 +67,7 @@ type myUserdata struct {
 	rsa   syscall.RawSockaddrAny
 	rsaSz uintptr
 	fd    int
+	flag  uint64
 	bid   int // buffer id
 	op    uring.IoUringOp
 }
@@ -87,6 +89,7 @@ type Eventloop struct {
 	bufSize, bufCount int
 	buffers           []byte
 	handler           EventHandler
+	sema              *uint64
 	userdata          *haxmap.Map[uring.UserData, *myUserdata]
 	bufGroup          uint16
 }
@@ -108,6 +111,7 @@ func New(ent uint32, listenFd int, handler EventHandler) *Eventloop {
 		buffers:  make([]byte, bufCount*bufSize),
 		userdata: haxmap.New[uring.UserData, *myUserdata](),
 		handler:  handler,
+		sema:     new(uint64),
 	}
 	if err := evloop.init(); err != nil {
 		panic(err)
@@ -195,12 +199,30 @@ func (e *Eventloop) queueClose(fd int, ud uring.UserData) *uring.IoUringSqe {
 	return sqe
 }
 
+func (e *Eventloop) queueGraceShutdownNop() *uring.IoUringSqe {
+	sqe := e.ring.GetSqe()
+	uring.PrepNop(sqe)
+	sqe.Flags |= uring.IOSQE_IO_LINK
+
+	key, ud := e.allocUserdata()
+	ud.init(sqe.Opcode)
+	ud.fd = e.fd
+	ud.flag = 0xDEAD_DEAD_DEAD_DEAD
+
+	sqe.UserData = key
+	return sqe
+}
+
 func (e *Eventloop) Run() {
 	var cqe *uring.IoUringCqe
 	var err error
 	for {
+		if atomic.CompareAndSwapUint64(e.sema, 1, 0) {
+			break
+		}
+
 		if err = e.ring.WaitCqe(&cqe); err == syscall.EINTR {
-			runtime.Gosched()
+			runtime.Gosched() // relax, do other thing while waiting for IO
 			continue
 		} else if err != nil {
 			panic(err)
@@ -215,6 +237,12 @@ func (e *Eventloop) Run() {
 		ctx.ud = ud
 
 		switch ud.op {
+		case uring.IORING_OP_NOP:
+			switch {
+			case e.fd == ud.fd && ud.flag == 0xDEAD_DEAD_DEAD_DEAD:
+				break
+			}
+
 		case uring.IORING_OP_ACCEPT:
 			var sa syscall.Sockaddr
 			sa, err = anyToSockaddr(&ud.rsa)
@@ -261,6 +289,18 @@ func (e *Eventloop) Run() {
 	skip_no_submit:
 		e.ring.SeenCqe(cqe)
 	}
+}
+
+func (e *Eventloop) Stop() error {
+	// mark spin to stop
+	atomic.StoreUint64(e.sema, 1)
+	// if the spin waiting for an event
+	// submit NOP with flag
+	e.queueGraceShutdownNop()
+	if _, err := e.ring.Submit(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (e *Eventloop) Close() {

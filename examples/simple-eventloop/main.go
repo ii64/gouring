@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/ii64/gouring/examples/simple-eventloop/lib"
+	"golang.org/x/sys/unix"
 )
 
 type myEchoServer struct{}
@@ -59,7 +61,9 @@ func (h myHTTP11Server) OnWrite(ctx lib.Context, nb int) {
 func (h myHTTP11Server) OnClose(ctx lib.Context) {
 }
 
-func runServer(addr string, handler lib.EventHandler) {
+func runServer(wg *sync.WaitGroup, ctx context.Context, addr string, handler lib.EventHandler) {
+	defer wg.Done()
+
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		panic(err)
@@ -71,7 +75,19 @@ func runServer(addr string, handler lib.EventHandler) {
 	}
 	defer file.Close()
 	fd := file.Fd()
+
+	unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_REUSEPORT, 1)
+	unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_REUSEADDR, 1)
 	evloop := lib.New(64, int(fd), handler)
+	defer evloop.Close()
+
+	go func() {
+		<-ctx.Done()
+		if err := evloop.Stop(); err != nil {
+			panic(err)
+		}
+	}()
+
 	evloop.Run()
 }
 
@@ -79,8 +95,14 @@ func main() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
 
-	go runServer("0.0.0.0:11338", myEchoServer{})
-	go runServer("0.0.0.0:11339", myHTTP11Server{})
+	var wg sync.WaitGroup
+	ctx, cancel := context.WithCancel(context.Background())
+	wg.Add(2)
+
+	go runServer(&wg, ctx, "0.0.0.0:11338", myEchoServer{})
+	go runServer(&wg, ctx, "0.0.0.0:11339", myHTTP11Server{})
 
 	<-sig
+	cancel()
+	wg.Wait()
 }

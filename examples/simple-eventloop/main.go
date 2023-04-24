@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/ii64/gouring/examples/simple-eventloop/lib"
 	"golang.org/x/sys/unix"
@@ -78,7 +80,7 @@ func runServer(wg *sync.WaitGroup, ctx context.Context, addr string, handler lib
 
 	unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_REUSEPORT, 1)
 	unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_REUSEADDR, 1)
-	evloop := lib.New(64, int(fd), handler)
+	evloop := lib.New(32, int(fd), handler)
 	defer evloop.Close()
 
 	go func() {
@@ -91,6 +93,41 @@ func runServer(wg *sync.WaitGroup, ctx context.Context, addr string, handler lib
 	evloop.Run()
 }
 
+func runClientEcho(ctx context.Context, id, serverAddr string) {
+	var c net.Conn
+	var err error
+	for {
+		if c, err = net.Dial("tcp", serverAddr); err == nil {
+			break
+		}
+		time.Sleep(time.Second)
+	}
+	defer c.Close()
+
+	var buf [512]byte
+	var nb int
+	i := 0
+	for ctx.Err() == nil {
+		c.SetReadDeadline(time.Now().Add(time.Second * 4))
+		var wnb int
+		payload := []byte(fmt.Sprintf("ECHO[%s]:%d", id, time.Now().UnixMilli()))
+		if wnb, err = c.Write(payload); err != nil {
+			panic(err)
+		}
+		if nb, err = c.Read(buf[:]); err != nil {
+			panic(err)
+		} else if wnb != nb {
+			panic("message size not equal")
+		}
+		b := buf[:nb]
+		if !bytes.Equal(payload, b) {
+			panic("message not equal")
+		}
+		fmt.Printf("CLIENT[%s] seq=%d: OK\n", id, i)
+		i++
+	}
+}
+
 func main() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
@@ -101,6 +138,10 @@ func main() {
 
 	go runServer(&wg, ctx, "0.0.0.0:11338", myEchoServer{})
 	go runServer(&wg, ctx, "0.0.0.0:11339", myHTTP11Server{})
+
+	for i := 0; i < 1; i++ {
+		go runClientEcho(ctx, strconv.Itoa(i), "0.0.0.0:11338")
+	}
 
 	<-sig
 	cancel()

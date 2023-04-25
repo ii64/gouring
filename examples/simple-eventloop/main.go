@@ -112,10 +112,14 @@ func runClientEcho(ctx context.Context, id, serverAddr string) {
 		var wnb int
 		payload := []byte(fmt.Sprintf("ECHO[%s]:%d", id, time.Now().UnixMilli()))
 		if wnb, err = c.Write(payload); err != nil {
-			panic(err)
+			fmt.Printf("CLIENT[%s] seq=%d WRITE err=%q\n", id, i, err)
+			// panic(err)
+			continue
 		}
 		if nb, err = c.Read(buf[:]); err != nil {
-			panic(err)
+			fmt.Printf("CLIENT[%s] seq=%d READ err=%q\n", id, i, err)
+			// panic(err)
+			continue
 		} else if wnb != nb {
 			panic("message size not equal")
 		}
@@ -134,10 +138,10 @@ func main() {
 
 	var wg sync.WaitGroup
 	ctx, cancel := context.WithCancel(context.Background())
-	wg.Add(2)
+	wg.Add(1)
 
 	go runServer(&wg, ctx, "0.0.0.0:11338", myEchoServer{})
-	go runServer(&wg, ctx, "0.0.0.0:11339", myHTTP11Server{})
+	// go runServer(&wg, ctx, "0.0.0.0:11339", myHTTP11Server{})
 
 	for i := 0; i < 1; i++ {
 		go runClientEcho(ctx, strconv.Itoa(i), "0.0.0.0:11338")

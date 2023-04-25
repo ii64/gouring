@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -96,6 +97,10 @@ func main() {
 		case 0xaaaaaaaa:
 			qRead()
 		case 0xbbbbbbbb:
+			// verify
+			if !bytes.Equal(buf[:], rbuf) {
+				panic("check failed")
+			}
 			qWrite()
 		}
 

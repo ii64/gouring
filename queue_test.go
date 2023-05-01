@@ -121,7 +121,7 @@ func TestRingQueueSubmitSingleConsumer(t *testing.T) {
 					}
 				}()
 				for ctx.Err() == nil {
-					err = h.io_uring_wait_cqe(&cqe)
+					err = h.WaitCqe(&cqe)
 					if err == syscall.EINTR {
 						// ignore INTR
 						continue
@@ -145,7 +145,7 @@ func TestRingQueueSubmitSingleConsumer(t *testing.T) {
 					_ = buf
 					// fmt.Printf("%+#v %s", buf, buf)
 
-					h.io_uring_cqe_seen(cqe) // necessary
+					h.SeenCqe(cqe) // necessary
 					wg.Done()
 				}
 			}
@@ -172,7 +172,7 @@ func TestRingQueueSubmitSingleConsumer(t *testing.T) {
 				for i := 0; i < tc.jobCount; i++ {
 					var sqe *IoUringSqe
 					for { // sqe could be nil if SQ is already full so we spin until we got one
-						sqe = h.io_uring_get_sqe()
+						sqe = h.GetSqe()
 						if sqe != nil {
 							break
 						}
@@ -205,7 +205,7 @@ func TestRingQueueSubmitSingleConsumer(t *testing.T) {
 				go consumer(h, ctx, &wg)
 
 				for i := 0; i < tc.jobCount; i++ {
-					sqe := h.io_uring_get_sqe()
+					sqe := h.GetSqe()
 					if sqe == nil {
 						// spin until we got one
 						continue

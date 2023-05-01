@@ -7,15 +7,26 @@
  */
 package gouring
 
-import "unsafe"
+import (
+	"syscall"
+	"unsafe"
+)
 
 /*
  * IO submission data structure (Submission Queue Entry)
  */
 type IoUringSqe_Union1 uint64
 
-func (u *IoUringSqe_Union1) SetOffset(v uint64) { *u = IoUringSqe_Union1(v) }
-func (u *IoUringSqe_Union1) SetAddr2(v uint64)  { *u = IoUringSqe_Union1(v) }
+func (u *IoUringSqe_Union1) SetOffset(v uint64)                { *u = IoUringSqe_Union1(v) }
+func (u *IoUringSqe_Union1) SetOffset_RawPtr(v unsafe.Pointer) { *u = IoUringSqe_Union1((uintptr)(v)) }
+func (u *IoUringSqe_Union1) SetAddr2(v uint64)                 { *u = IoUringSqe_Union1(v) }
+func (u *IoUringSqe_Union1) SetAddr2_RawPtr(v unsafe.Pointer)  { *u = IoUringSqe_Union1((uintptr)(v)) }
+func (u *IoUringSqe_Union1) SetCmdOp(v uint32) {
+	(*struct {
+		CmdOp  uint32
+		__pad1 uint32
+	})(unsafe.Pointer(u)).CmdOp = v
+}
 
 type IoUringSqe_Union2 uint64
 
@@ -26,6 +37,7 @@ func (u *IoUringSqe_Union2) SetSpliceOffsetIn(v uint64) { *u = IoUringSqe_Union2
 type IoUringSqe_Union3 uint32
 
 func (u *IoUringSqe_Union3) SetRwFlags(v uint32)        { *u = IoUringSqe_Union3(v) }
+func (u *IoUringSqe_Union3) SetFsyncFlags(v uint32)     { *u = IoUringSqe_Union3(v) }
 func (u *IoUringSqe_Union3) SetPollEvents(v uint16)     { *u = IoUringSqe_Union3(v) }
 func (u *IoUringSqe_Union3) SetPoll32Events(v uint32)   { *u = IoUringSqe_Union3(v) }
 func (u *IoUringSqe_Union3) SetSyncRangeFlags(v uint32) { *u = IoUringSqe_Union3(v) }
@@ -41,6 +53,8 @@ func (u *IoUringSqe_Union3) SetRenameFlags(v uint32)    { *u = IoUringSqe_Union3
 func (u *IoUringSqe_Union3) SetUnlinkFlags(v uint32)    { *u = IoUringSqe_Union3(v) }
 func (u *IoUringSqe_Union3) SetHardlinkFlags(v uint32)  { *u = IoUringSqe_Union3(v) }
 func (u *IoUringSqe_Union3) SetXattrFlags(v uint32)     { *u = IoUringSqe_Union3(v) }
+func (u *IoUringSqe_Union3) SetMsgRingFlags(v uint32)   { *u = IoUringSqe_Union3(v) }
+func (u *IoUringSqe_Union3) SetUringCmdFlags(v uint32)  { *u = IoUringSqe_Union3(v) }
 func (u *IoUringSqe_Union3) SetOpFlags(v uint32)        { *u = IoUringSqe_Union3(v) } //generic
 func (u IoUringSqe_Union3) GetOpFlags() uint32          { return uint32(u) }          //generic
 
@@ -53,6 +67,21 @@ type IoUringSqe_Union5 uint32
 
 func (u *IoUringSqe_Union5) SetSpliceFdIn(v int32) { *u = IoUringSqe_Union5(v) }
 func (u *IoUringSqe_Union5) SetFileIndex(v uint32) { *u = IoUringSqe_Union5(v) }
+func (u *IoUringSqe_Union5) SetAddrLen(v uint16) {
+	s := (*[2]uint16)(unsafe.Pointer(u))
+	s[0] = v // addr_len
+	// s[1] = 0 // __pad3[1]
+}
+
+type IoUringSqe_Union6 [2]uint64
+
+func (u *IoUringSqe_Union6) SetAddr3(v uint64) { u[0] = v }
+
+/*
+ * If the ring is initialized with IORING_SETUP_SQE128, then
+ * this field is used for 80 bytes of arbitrary command data
+ */
+func (u *IoUringSqe_Union6) GetCmd() unsafe.Pointer { return unsafe.Pointer(u) }
 
 type IoUringSqe struct {
 	Opcode IoUringOp /* type of operation for this sqe */
@@ -63,6 +92,10 @@ type IoUringSqe struct {
 	//  union {
 	// 	 __u64	off;	/* offset into file */
 	// 	 __u64	addr2;
+	//	 struct {
+	//	 	__u32	cmd_op;
+	//	 	__u32	__pad1;
+	//	 };
 	//  };
 	IoUringSqe_Union1
 
@@ -92,6 +125,8 @@ type IoUringSqe struct {
 	// 	 __u32		unlink_flags;
 	// 	 __u32		hardlink_flags;
 	// 	 __u32		xattr_flags;
+	//   __u32		msg_ring_flags;
+	//   __u32		uring_cmd_flags;
 	//  };
 	IoUringSqe_Union3
 
@@ -109,14 +144,28 @@ type IoUringSqe struct {
 	/* personality to use, if used */
 	Personality uint16
 
-	//  union {
-	// 	 __s32	splice_fd_in;
-	// 	 __u32	file_index;
-	//  };
+	// union {
+	// 	__s32	splice_fd_in;
+	// 	__u32	file_index;
+	// 	struct {
+	// 		__u16	addr_len;
+	// 		__u16	__pad3[1];
+	// 	};
+	// };
 	IoUringSqe_Union5
 
-	Addr3  uint64
-	__pad2 [1]uint64
+	// union {
+	// 	struct {
+	// 		__u64	addr3;
+	// 		__u64	__pad2[1];
+	// 	};
+	// 	/*
+	// 	 * If the ring is initialized with IORING_SETUP_SQE128, then
+	// 	 * this field is used for 80 bytes of arbitrary command data
+	// 	 */
+	// 	__u8	cmd[0];
+	// };
+	IoUringSqe_Union6
 }
 
 /*
@@ -187,13 +236,21 @@ const IORING_SETUP_COOP_TASKRUN = (1 << 8)
  * IORING_SQ_TASKRUN in the sq ring flags. Not valid with COOP_TASKRUN.
  */
 const IORING_SETUP_TASKRUN_FLAG = (1 << 9)
-
 const IORING_SETUP_SQE128 = (1 << 10) /* SQEs are 128 byte */
 const IORING_SETUP_CQE32 = (1 << 11)  /* CQEs are 32 byte */
+/*
+ * Only one task is allowed to submit requests
+ */
+const IORING_SETUP_SINGLE_ISSUER = (1 << 12)
+
+/*
+ * Defer running task work to get events.
+ * Rather than running bits of task work whenever the task transitions
+ * try to do it just before it is needed.
+ */
+const IORING_SETUP_DEFER_TASKRUN = (1 << 13)
 
 type IoUringOp = uint8
-
-//go:generate stringerx -type=IoUringOp
 
 const (
 	IORING_OP_NOP IoUringOp = iota
@@ -243,10 +300,19 @@ const (
 	IORING_OP_GETXATTR
 	IORING_OP_SOCKET
 	IORING_OP_URING_CMD
+	IORING_OP_SEND_ZC
+	IORING_OP_SENDMSG_ZC
 
 	/* this goes last, obviously */
 	IORING_OP_LAST
 )
+
+/*
+ * sqe->uring_cmd_flags
+ * IORING_URING_CMD_FIXED	use registered buffer; pass thig flag
+ *				along with setting sqe->buf_index.
+ */
+const IORING_URING_CMD_FIXED = (1 << 0)
 
 /*
  * sqe->fsync_flags
@@ -283,11 +349,14 @@ const SPLICE_F_FD_IN_FIXED = (1 << 31) /* the last bit of __u32 */
  *
  * IORING_POLL_UPDATE		Update existing poll request, matching
  *				sqe->addr as the old user_data field.
+ *
+ * IORING_POLL_LEVEL		Level triggered poll.
  */
 const (
 	IORING_POLL_ADD_MULTI        = (1 << 0)
 	IORING_POLL_UPDATE_EVENTS    = (1 << 1)
 	IORING_POLL_UPDATE_USER_DATA = (1 << 2)
+	IORING_POLL_ADD_LEVEL        = (1 << 3)
 )
 
 /*
@@ -297,11 +366,13 @@ const (
  * IORING_ASYNC_CANCEL_FD	Key off 'fd' for cancelation rather than the
  *				request 'user_data'
  * IORING_ASYNC_CANCEL_ANY	Match any request
+ * IORING_ASYNC_CANCEL_FD_FIXED	'fd' passed in is a fixed descriptor
  */
 const (
-	IORING_ASYNC_CANCEL_ALL = (1 << 0)
-	IORING_ASYNC_CANCEL_FD  = (1 << 1)
-	IORING_ASYNC_CANCEL_ANY = (1 << 2)
+	IORING_ASYNC_CANCEL_ALL      = (1 << 0)
+	IORING_ASYNC_CANCEL_FD       = (1 << 1)
+	IORING_ASYNC_CANCEL_ANY      = (1 << 2)
+	IORING_ASYNC_CANCEL_FD_FIXED = (1 << 3)
 )
 
 /*
@@ -311,13 +382,39 @@ const (
  *				or receive and arm poll if that yields an
  *				-EAGAIN result, arm poll upfront and skip
  *				the initial transfer attempt.
+ * IORING_RECV_MULTISHOT	Multishot recv. Sets IORING_CQE_F_MORE if
+ *				the handler will continue to report
+ *				CQEs on behalf of the same SQE.
+ *
+ * IORING_RECVSEND_FIXED_BUF	Use registered buffers, the index is stored in
+ *				the buf_index field.
  */
-const IORING_RECVSEND_POLL_FIRST = (1 << 0)
+const (
+	IORING_RECVSEND_POLL_FIRST = (1 << 0)
+	IORING_RECV_MULTISHOT      = (1 << 1)
+	IORING_RECVSEND_FIXED_BUF  = (1 << 2)
+)
 
 /*
  * accept flags stored in sqe->ioprio
  */
 const IORING_ACCEPT_MULTISHOT = (1 << 0)
+
+/*
+ * IORING_OP_MSG_RING command types, stored in sqe->addr
+ */
+const (
+	IORING_MSG_DATA    = iota /* pass sqe->len as 'res' and off as user_data */
+	IORING_MSG_SEND_FD        /* send a registered fd to another ring */
+)
+
+/*
+ * IORING_OP_MSG_RING flags (sqe->msg_ring_flags)
+ *
+ * IORING_MSG_RING_CQE_SKIP	Don't post a CQE to the target ring. Not
+ *				applicable for IORING_MSG_DATA, obviously.
+ */
+const IORING_MSG_RING_CQE_SKIP = (1 << 0)
 
 /*
  * IO completion data structure (Completion Queue Entry)
@@ -332,8 +429,6 @@ type IoUringCqe struct {
 	 * contains 16-bytes of padding, doubling the size of the CQE.
 	 */
 	//  __u64 big_cqe[];
-
-	// 8+4+4 == 16 , correct
 }
 
 /*
@@ -342,12 +437,15 @@ type IoUringCqe struct {
  * IORING_CQE_F_BUFFER	If set, the upper 16 bits are the buffer ID
  * IORING_CQE_F_MORE	If set, parent SQE will generate more CQE entries
  * IORING_CQE_F_SOCK_NONEMPTY	If set, more data to read after socket recv
+ * IORING_CQE_F_NOTIF	Set for notification CQEs. Can be used to distinct
+ * 			them from sends.
  */
 
 const (
 	IORING_CQE_F_BUFFER        = (1 << 0)
 	IORING_CQE_F_MORE          = (1 << 1)
 	IORING_CQE_F_SOCK_NONEMPTY = (1 << 2)
+	IORING_CQE_F_NOTIF         = (1 << 3)
 )
 
 const (
@@ -493,6 +591,12 @@ const (
 	IORING_REGISTER_PBUF_RING   = 22
 	IORING_UNREGISTER_PBUF_RING = 23
 
+	/* sync cancelation API */
+	IORING_REGISTER_SYNC_CANCEL = 24
+
+	/* register a range of fixed file slots for automatic slot allocation */
+	IORING_REGISTER_FILE_ALLOC_RANGE = 25
+
 	/* this goes last */
 	IORING_REGISTER_LAST
 )
@@ -507,7 +611,7 @@ const (
 type IoUringFilesUpdate struct {
 	Offset uint32
 	resv   uint32
-	Fds    uint64 // __aligned_u64/* __s32 * */
+	Fds    uint64 // TODO: __aligned_u64/* __s32 * */
 }
 
 /*
@@ -520,23 +624,36 @@ type IoUringRsrcRegister struct {
 	Nr    uint32
 	Flags uint32
 	resv2 uint64
-	Data  uint64 // __aligned_u64
-	Tags  uint64 // __aligned_u64
+	Data  uint64 // TODO: __aligned_u64
+	Tags  uint64 // TODO: __aligned_u64
 }
 
 type IoUringRsrcUpdate struct {
 	Offset uint32
 	resv   uint32
-	Data   uint64 // __aligned_u64
+	Data   uint64 // TODO: __aligned_u64
 }
 
 type IoUringRsrcUpdate2 struct {
 	Offset uint32
 	resv   uint32
-	Data   uint64 // __aligned_u64
-	Tags   uint64 // __aligned_u64
+	Data   uint64 // TODO: __aligned_u64
+	Tags   uint64 // TODO: __aligned_u64
 	Nr     uint32
 	resv2  uint32
+}
+
+type IoUringNotificationSlot struct {
+	tag  uint64
+	resv [3]uint64
+}
+
+type IoUringNotificationRegister struct {
+	nr_slots uint32
+	resv     uint32
+	resv2    uint64
+	data     uint64
+	resv3    uint64
 }
 
 /* Skip updating fd indexes set to this value in the fd table */
@@ -553,10 +670,12 @@ type IoUringProbeOp struct {
 
 type IoUringProbe struct {
 	last_op uint8 /* last opcode supported */
-	uint8         /* length of ops[] array below */
+	ops_len uint8 /* length of ops[] array below */
 	resv    uint16
 	resv2   [3]uint32
-	ops     [0]IoUringProbeOp
+
+	// IMPLEMENTED ON hdr_extra
+	// ops     [0]IoUringProbeOp
 }
 
 type IoUringRestriction struct {
@@ -590,6 +709,8 @@ type IoUringBufRing struct {
 		resv3 uint16
 		Tail  uint16
 	}
+
+	// IMPLEMENTED ON hdr_extra
 	// bufs [0]IoUringBuf
 	//  };
 }
@@ -630,6 +751,29 @@ type IoUringGeteventsArg struct {
 }
 
 /*
- * accept flags stored in sqe->ioprio
+ * Argument for IORING_REGISTER_SYNC_CANCEL
  */
-// const IORING_ACCEPT_MULTISHOT = (1 << 0)
+type IouringSyncCancelReg struct {
+	Addr    uint64
+	Fd      int32
+	Flags   uint32
+	timeout syscall.Timespec
+	pad     [4]uint64
+}
+
+/*
+ * Argument for IORING_REGISTER_FILE_ALLOC_RANGE
+ * The range is specified as [off, off + len)
+ */
+type IoUringFileIndexRange struct {
+	Offset uint32
+	Len    uint32
+	resv   uint64
+}
+
+type IoUringRecvmsgOut struct {
+	Namelen    uint32
+	Controllen uint32
+	Payloadlen uint32
+	Flags      uint32
+}

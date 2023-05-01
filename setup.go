@@ -20,6 +20,14 @@ func io_uring_queue_init_params(entries uint32, ring *IoUring, p *IoUringParams)
 	if err != nil {
 		return err
 	}
+
+	// Directly map SQ slots to SQEs
+	sqArray := ring.Sq.Array
+	sqEntries := *ring.Sq._KRingEntries()
+	var index uint32
+	for index = 0; index < sqEntries; index++ {
+		*uint32Array_Index(sqArray, uintptr(index)) = index
+	}
 	ring.Features = p.Features
 	return nil
 }
@@ -29,9 +37,9 @@ func (ring *IoUring) io_uring_queue_exit() {
 	cq := &ring.Cq
 	sqeSize := SizeofIoUringSqe
 	if ring.Flags&IORING_SETUP_SQE128 != 0 {
-		sqeSize += 64
+		sqeSize += Align128IoUringSqe
 	}
-	munmap(unsafe.Pointer(sq.Sqes), sqeSize*uintptr(*sq._RingEntries()))
+	munmap(unsafe.Pointer(sq.Sqes), sqeSize*uintptr(*sq._KRingEntries()))
 	io_uring_unmap_rings(sq, cq)
 	/*
 	 * Not strictly required, but frees up the slot we used now rather
@@ -67,7 +75,7 @@ func io_uring_mmap(fd int, p *IoUringParams, sq *IoUringSq, cq *IoUringCq) (err 
 		if cq.RingSz > sq.RingSz {
 			sq.RingSz = cq.RingSz
 		}
-		// cq.RingSz = sq.RingSz
+		cq.RingSz = sq.RingSz
 	}
 	// alloc sq ring
 	sq.RingPtr, err = mmap(nil, uintptr(sq.RingSz),
@@ -94,17 +102,17 @@ func io_uring_mmap(fd int, p *IoUringParams, sq *IoUringSq, cq *IoUringCq) (err 
 	}
 
 	//sq
-	sq.head = (unsafe.Pointer(uintptr(sq.RingPtr) + uintptr(p.SqOff.Head)))
-	sq.tail = (unsafe.Pointer(uintptr(sq.RingPtr) + uintptr(p.SqOff.Tail)))
-	sq.ringMask = (unsafe.Pointer(uintptr(sq.RingPtr) + uintptr(p.SqOff.RingMask)))
-	sq.ringEntries = (unsafe.Pointer(uintptr(sq.RingPtr) + uintptr(p.SqOff.RingEntries)))
-	sq.flags = (unsafe.Pointer(uintptr(sq.RingPtr) + uintptr(p.SqOff.Flags)))
-	sq.dropped = (unsafe.Pointer(uintptr(sq.RingPtr) + uintptr(p.SqOff.Dropped)))
-	sq.Array = (uint32Array)(unsafe.Pointer(uintptr(sq.RingPtr) + uintptr(p.SqOff.Array)))
+	sq.khead = unsafe.Add(sq.RingPtr, p.SqOff.Head)
+	sq.ktail = unsafe.Add(sq.RingPtr, p.SqOff.Tail)
+	sq.kringMask = unsafe.Add(sq.RingPtr, p.SqOff.RingMask)
+	sq.kringEntries = unsafe.Add(sq.RingPtr, p.SqOff.RingEntries)
+	sq.kflags = unsafe.Add(sq.RingPtr, p.SqOff.Flags)
+	sq.kdropped = unsafe.Add(sq.RingPtr, p.SqOff.Dropped)
+	sq.Array = (uint32Array)(unsafe.Add(sq.RingPtr, p.SqOff.Array))
 
 	size = SizeofIoUringSqe
 	if p.Flags&IORING_SETUP_SQE128 != 0 {
-		size += 64
+		size += Align128IoUringSqe
 	}
 	var sqeAddr unsafe.Pointer
 	sqeAddr, err = mmap(nil, size*uintptr(p.SqEntries),
@@ -119,15 +127,21 @@ func io_uring_mmap(fd int, p *IoUringParams, sq *IoUringSq, cq *IoUringCq) (err 
 	sq.Sqes = (ioUringSqeArray)(sqeAddr)
 
 	//cq
-	cq.head = (unsafe.Pointer(uintptr(cq.RingPtr) + uintptr(p.CqOff.Head)))
-	cq.tail = (unsafe.Pointer(uintptr(cq.RingPtr) + uintptr(p.CqOff.Tail)))
-	cq.ringMask = (unsafe.Pointer(uintptr(cq.RingPtr) + uintptr(p.CqOff.RingMask)))
-	cq.ringEntries = (unsafe.Pointer(uintptr(cq.RingPtr) + uintptr(p.CqOff.RingEntries)))
-	cq.overflow = (unsafe.Pointer(uintptr(cq.RingPtr) + uintptr(p.CqOff.Overflow)))
-	cq.Cqes = (ioUringCqeArray)(unsafe.Pointer(uintptr(cq.RingPtr) + uintptr(p.CqOff.Cqes)))
+	cq.khead = unsafe.Add(cq.RingPtr, p.CqOff.Head)
+	cq.ktail = unsafe.Add(cq.RingPtr, p.CqOff.Tail)
+	cq.kringMask = unsafe.Add(cq.RingPtr, p.CqOff.RingMask)
+	cq.kringEntries = unsafe.Add(cq.RingPtr, p.CqOff.RingEntries)
+	cq.koverflow = unsafe.Add(cq.RingPtr, p.CqOff.Overflow)
+	cq.Cqes = (ioUringCqeArray)(unsafe.Add(cq.RingPtr, p.CqOff.Cqes))
+
 	if p.CqOff.Flags != 0 {
-		cq.flags = (unsafe.Pointer(uintptr(cq.RingPtr) + uintptr(p.CqOff.Flags)))
+		cq.kflags = (unsafe.Pointer(uintptr(cq.RingPtr) + uintptr(p.CqOff.Flags)))
 	}
+
+	sq.RingMask = *sq._KRingMask()
+	sq.RingEntries = *sq._KRingEntries()
+	cq.RingMask = *cq._KRingMask()
+	cq.RingEntries = *cq._KRingEntries()
 	return nil
 }
 
@@ -137,4 +151,18 @@ func io_uring_unmap_rings(sq *IoUringSq, cq *IoUringCq) error {
 		munmap(cq.RingPtr, uintptr(cq.RingSz))
 	}
 	return nil
+}
+
+func io_uring_get_probe_ring(ring *IoUring) (probe *IoUringProbe) {
+	// len := SizeofIoUringProbe + 256*SizeofIouringProbeOp
+	probe = new(IoUringProbe)
+	r := ring.io_uring_register_probe(probe, 256)
+	if r >= 0 {
+		return
+	}
+	return nil
+}
+
+func (ring *IoUring) io_uring_get_probe_ring() (probe *IoUringProbe) {
+	return io_uring_get_probe_ring(ring)
 }

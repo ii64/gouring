@@ -3,11 +3,28 @@ package gouring
 import "unsafe"
 
 const (
-	SizeofUnsigned   = unsafe.Sizeof(uint32(0))
-	SizeofUint32     = unsafe.Sizeof(uint32(0))
-	SizeofIoUringSqe = unsafe.Sizeof(IoUringSqe{})
-	SizeofIoUringCqe = unsafe.Sizeof(IoUringCqe{})
+	SizeofUnsigned     = unsafe.Sizeof(uint32(0))
+	SizeofUint32       = unsafe.Sizeof(uint32(0))
+	SizeofIoUringSqe   = unsafe.Sizeof(IoUringSqe{})
+	Align128IoUringSqe = 64
+	SizeofIoUringCqe   = unsafe.Sizeof(IoUringCqe{})
+	Align32IoUringCqe  = SizeofIoUringCqe
+
+	SizeofIoUringProbe   = unsafe.Sizeof(IoUringProbe{})
+	SizeofIoUringProbeOp = unsafe.Sizeof(IoUringProbeOp{})
+	SizeofIoUringBufRing = unsafe.Sizeof(IoUringBufRing{})
+	SizeofIoUringBuf     = unsafe.Sizeof(IoUringBuf{})
 )
+
+func _SizeChecker() {
+	var x [1]struct{}
+	_ = x[SizeofIoUringSqe-64]
+	_ = x[SizeofIoUringCqe-16]
+	_ = x[SizeofIoUringProbe-16]
+	_ = x[SizeofIoUringProbeOp-8]
+	_ = x[SizeofIoUringBufRing-16]
+	_ = x[SizeofIoUringBuf-16]
+}
 
 type IoUring struct {
 	Sq     IoUringSq
@@ -24,12 +41,12 @@ type IoUring struct {
 }
 
 type IoUringSq struct {
-	head        unsafe.Pointer // *uint32
-	tail        unsafe.Pointer // *uint32
-	ringMask    unsafe.Pointer // *uint32
-	ringEntries unsafe.Pointer // *uint32
-	flags       unsafe.Pointer // *uint32
-	dropped     unsafe.Pointer // *uint32
+	khead        unsafe.Pointer // *uint32
+	ktail        unsafe.Pointer // *uint32
+	kringMask    unsafe.Pointer // *uint32
+	kringEntries unsafe.Pointer // *uint32
+	kflags       unsafe.Pointer // *uint32
+	kdropped     unsafe.Pointer // *uint32
 
 	Array uint32Array     //ptr arith
 	Sqes  ioUringSqeArray //ptr arith
@@ -40,35 +57,39 @@ type IoUringSq struct {
 	RingSz  uint32
 	RingPtr unsafe.Pointer
 
-	pad [4]uint32
+	RingMask, RingEntries uint32
+
+	pad [2]uint32
 }
 
-func (sq *IoUringSq) _Head() *uint32        { return (*uint32)(sq.head) }
-func (sq *IoUringSq) _Tail() *uint32        { return (*uint32)(sq.tail) }
-func (sq *IoUringSq) _RingMask() *uint32    { return (*uint32)(sq.ringMask) }
-func (sq *IoUringSq) _RingEntries() *uint32 { return (*uint32)(sq.ringEntries) }
-func (sq *IoUringSq) _Flags() *uint32       { return (*uint32)(sq.flags) }
-func (sq *IoUringSq) _Dropped() *uint32     { return (*uint32)(sq.dropped) }
+func (sq *IoUringSq) _KHead() *uint32        { return (*uint32)(sq.khead) }
+func (sq *IoUringSq) _KTail() *uint32        { return (*uint32)(sq.ktail) }
+func (sq *IoUringSq) _KRingMask() *uint32    { return (*uint32)(sq.kringMask) }
+func (sq *IoUringSq) _KRingEntries() *uint32 { return (*uint32)(sq.kringEntries) }
+func (sq *IoUringSq) _KFlags() *uint32       { return (*uint32)(sq.kflags) }
+func (sq *IoUringSq) _KDropped() *uint32     { return (*uint32)(sq.kdropped) }
 
 type IoUringCq struct {
-	head        unsafe.Pointer // *uint32
-	tail        unsafe.Pointer // *uint32
-	ringMask    unsafe.Pointer // *uint32
-	ringEntries unsafe.Pointer // *uint32
-	flags       unsafe.Pointer // *uint32
-	overflow    unsafe.Pointer // *uint32
+	khead        unsafe.Pointer // *uint32
+	ktail        unsafe.Pointer // *uint32
+	kringMask    unsafe.Pointer // *uint32
+	kringEntries unsafe.Pointer // *uint32
+	kflags       unsafe.Pointer // *uint32
+	koverflow    unsafe.Pointer // *uint32
 
 	Cqes ioUringCqeArray //ptr arith
 
 	RingSz  uint32
 	RingPtr unsafe.Pointer
 
-	pad [4]uint32
+	RingMask, RingEntries uint32
+
+	pad [2]uint32
 }
 
-func (cq *IoUringCq) _Head() *uint32        { return (*uint32)(cq.head) }
-func (cq *IoUringCq) _Tail() *uint32        { return (*uint32)(cq.tail) }
-func (cq *IoUringCq) _RingMask() *uint32    { return (*uint32)(cq.ringMask) }
-func (cq *IoUringCq) _RingEntries() *uint32 { return (*uint32)(cq.ringEntries) }
-func (cq *IoUringCq) _Flags() *uint32       { return (*uint32)(cq.flags) }
-func (cq *IoUringCq) _Overflow() *uint32    { return (*uint32)(cq.overflow) }
+func (cq *IoUringCq) _KHead() *uint32        { return (*uint32)(cq.khead) }
+func (cq *IoUringCq) _KTail() *uint32        { return (*uint32)(cq.ktail) }
+func (cq *IoUringCq) _KRingMask() *uint32    { return (*uint32)(cq.kringMask) }
+func (cq *IoUringCq) _KRingEntries() *uint32 { return (*uint32)(cq.kringEntries) }
+func (cq *IoUringCq) _KFlags() *uint32       { return (*uint32)(cq.kflags) }
+func (cq *IoUringCq) _KOverflow() *uint32    { return (*uint32)(cq.koverflow) }

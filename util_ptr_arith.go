@@ -7,34 +7,42 @@ import (
 type uint32Array = unsafe.Pointer // *uint32
 
 func uint32Array_Index(u uint32Array, i uintptr) *uint32 {
-	return (*uint32)(unsafe.Pointer(uintptr(unsafe.Pointer(u)) + SizeofUint32*i))
+
+	return (*uint32)(unsafe.Add(u, SizeofUint32*i))
 }
 
 type ioUringSqeArray = unsafe.Pointer // *IoUringSqe
 
+// ioUringSqeArray_Index OR SQE64
 func ioUringSqeArray_Index(u ioUringSqeArray, i uintptr) *IoUringSqe {
-	return (*IoUringSqe)(unsafe.Pointer(uintptr(unsafe.Pointer(u)) + SizeofIoUringSqe*i))
+
+	return (*IoUringSqe)(unsafe.Add(u, SizeofIoUringSqe*i))
 }
 
+// ioUringSqe128Array_Index OR SQE128
 func ioUringSqe128Array_Index(u ioUringSqeArray, i uintptr) *IoUringSqe {
-	return (*IoUringSqe)(unsafe.Pointer(uintptr(unsafe.Pointer(u)) + (SizeofIoUringSqe+64)*i))
+
+	return (*IoUringSqe)(unsafe.Add(u, (SizeofIoUringSqe+Align128IoUringSqe)*i))
 }
 
 //
 
 type ioUringCqeArray = unsafe.Pointer // *IoUringCqe
 
+// ioUringCqeArray_Index OR CQE16
 func ioUringCqeArray_Index(u ioUringCqeArray, i uintptr) *IoUringCqe {
-	return (*IoUringCqe)(unsafe.Pointer(uintptr(unsafe.Pointer(u)) + SizeofIoUringCqe*i))
+
+	return (*IoUringCqe)(unsafe.Add(u, SizeofIoUringCqe*i))
 }
 
+// ioUringCqe32Array_Index OR CQE32
 func ioUringCqe32Array_Index(u ioUringCqeArray, i uintptr) *IoUringCqe {
-	return (*IoUringCqe)(unsafe.Pointer(uintptr(unsafe.Pointer(u)) + (SizeofIoUringCqe+SizeofIoUringCqe)*i))
+	return (*IoUringCqe)(unsafe.Add(u, (SizeofIoUringCqe+Align32IoUringCqe)*i))
 }
 
 //
 
-type UserData [8]byte // uint64
+type UserData uint64
 
 func (u *UserData) SetUint64(v uint64) {
 	putUintptr(unsafe.Pointer(u), uintptr(v))
@@ -49,6 +57,9 @@ func (u *UserData) SetUnsafe(ptr unsafe.Pointer) {
 
 func (u UserData) GetUnsafe() unsafe.Pointer {
 	return *(*unsafe.Pointer)(unsafe.Pointer(&u))
+}
+func (u UserData) GetBytes() [8]byte {
+	return *(*[8]byte)(u.GetUnsafe())
 }
 func (u UserData) GetUintptr() uintptr {
 	return uintptr(u.GetUnsafe())
